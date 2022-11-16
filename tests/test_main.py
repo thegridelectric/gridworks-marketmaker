@@ -2,7 +2,7 @@
 import pytest
 from click.testing import CliRunner
 
-from gridworks_marketmaker import __main__
+from gwmm import __main__
 
 
 @pytest.fixture

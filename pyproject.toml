@@ -30,6 +30,7 @@ python-dotenv = "^0.21.0"
 requests = "^2.28.1"
 requests-async = "^0.6.2"
 rich = "^12.6.0"
+py-algorand-sdk = "^1.20.1"
 
 [tool.poetry.dev-dependencies]
 Pygments = ">=2.10.0"
@@ -58,7 +59,7 @@ xdoctest = {extras = ["colors"], version = ">=0.15.10"}
 myst-parser = {version = ">=0.16.1"}
 
 [tool.poetry.scripts]
-gridworks-marketmaker = "gridworks_marketmaker.__main__:main"
+gridworks-marketmaker = "gwmm.__main__:main"
 
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
@@ -66,7 +67,7 @@ tests = ["tests", "*/tests"]
 
 [tool.coverage.run]
 branch = true
-source = ["gridworks_marketmaker", "tests"]
+source = ["gwmm", "tests"]
 
 [tool.coverage.report]
 show_missing = true

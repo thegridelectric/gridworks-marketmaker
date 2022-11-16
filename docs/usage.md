@@ -1,7 +1,7 @@
 # Usage
 
 ```{eval-rst}
-.. click:: gridworks_marketmaker.__main__:main
-    :prog: gridworks-marketmaker
+.. click:: gwmm.__main__:main
+    :prog: gwmm
     :nested: full
 ```

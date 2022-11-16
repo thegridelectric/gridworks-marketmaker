@@ -1,8 +1,8 @@
 # Reference
 
-## gridworks_marketmaker
+## gwmm
 
 ```{eval-rst}
-.. automodule:: gridworks_marketmaker
+.. automodule:: gwmm
    :members:
 ```
