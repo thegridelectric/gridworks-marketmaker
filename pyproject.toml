@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "gridworks-marketmaker"
+name = "gwmm"
 version = "0.0.0"
 description = "Gridworks Marketmaker"
 authors = ["Jessica Millar <jmillar@gridworks-consulting.com>"]
@@ -8,6 +8,9 @@ readme = "README.md"
 homepage = "https://github.com/thegridelectric/gridworks-marketmaker"
 repository = "https://github.com/thegridelectric/gridworks-marketmaker"
 documentation = "https://gridworks-marketmaker.readthedocs.io"
+packages = [
+    { include = "gwmm", from = "src" },
+]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
 ]

@@ -54,7 +54,7 @@ or the command-line interface:
 
 ```console
 $ poetry run python
-$ poetry run gridworks-marketmaker
+$ poetry run gwmm
 ```
 
 [poetry]: https://python-poetry.org/

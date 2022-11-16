@@ -1,13 +1,9 @@
-from gwatn.data_classes.d_edge import DEdge
-from gwatn.data_classes.d_node import DNode
-from gwatn.data_classes.g_node import GNode
-from gwatn.data_classes.gps_point import GpsPoint
-from gwatn.data_classes.market_type import MarketType
+from gwmm.data_classes.g_node import GNode
+from gwmm.data_classes.gps_point import GpsPoint
+from gwmm.data_classes.market_type import MarketType
 
 
 __all__ = [
-    "DEdge",
-    "DNode",
     "GNode",
     "GpsPoint",
     "MarketType",

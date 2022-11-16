@@ -34,7 +34,7 @@
 You can install _Gridworks Marketmaker_ via [pip] from [PyPI]:
 
 ```console
-$ pip install gridworks-marketmaker
+$ pip install gwmm
 ```
 
 ## Usage
