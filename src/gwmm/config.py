@@ -1,5 +1,6 @@
 """Settings for an AtomicTNode, readable from environment and/or from env files."""
 
+import pendulum
 from pydantic import BaseModel
 from pydantic import BaseSettings
 from pydantic import SecretStr
@@ -46,6 +47,9 @@ class Settings(BaseSettings):
     g_node_role_value: str = "MarketMaker"
     my_super_alias: str = "d1.super3"
     my_time_coordinator_alias = "d1.time"
+    initial_time_unix_s = pendulum.datetime(
+        year=2020, month=1, day=1, hour=5
+    ).int_timestamp
     log_level: str = "INFO"
     universe_type_value: str = "Dev"
     rabbit: RabbitBrokerClient = RabbitBrokerClient()

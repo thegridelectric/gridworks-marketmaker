@@ -1069,5 +1069,5 @@ class ActorBase(ABC):
     def new_timestep(self, payload: SimTimestep) -> None:
         pass
 
-    def timestep_received_again(self, payload: SimTimestep) -> None:
+    def repeated_timestep(self, payload: SimTimestep) -> None:
         pass

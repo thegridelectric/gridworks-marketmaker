@@ -1,5 +1,6 @@
 """MarketMaker"""
 
+import csv
 import logging
 import math
 import random
@@ -74,18 +75,38 @@ class MarketMaker(MarketMakerBase):
         self.clearing_price: Dict[MarketTypeName, Dict[int, MarketPrice]] = {
             self.mm_type.Name: {}
         }
+
+        self.hack_clearing_price: Dict[int, MarketPrice] = {}
+        self.initialize_hack_clearing_price()
         LOGGER.info("MarketMaker initialized")
+
+    def initialize_hack_clearing_price(self) -> Dict[int, MarketPrice]:
+        file = "input_data/dev_prices.csv"
+        from typing import List
+
+        rows: List[str] = []
+        with open(file) as f:
+            reader = csv.reader(f)
+            for row in reader:
+                rows.append(row)
+        start_row = 14
+        start = self.settings.initial_time_unix_s
+        for ts_idx in range(1000):
+            time = start + ts_idx * 3600
+            price = float(rows[start_row + ts_idx][0])
+            self.hack_clearing_price[time] = MarketPrice(
+                ValueTimes1000=int(1000 * price),
+                Unit=MarketPriceUnit.USDPerMWh,
+            )
 
     def new_timestep(self, payload: SimTimestep) -> None:
         LOGGER.info(f"Got timestep. Time is now {self.time_utc_str()}")
-        if self.latest_time_unix_s in self.slot_books[self.mm_type.Name].keys():
-            book: MarketBook = self.slot_books[self.mm_type.Name][
-                self.latest_time_unix_s
-            ]
+        if self.time_s in self.slot_books[self.mm_type.Name].keys():
+            book: MarketBook = self.slot_books[self.mm_type.Name][self.time_s]
             try:
                 self.clear_market(book)
-            except:
-                LOGGER.warning(f"failure with mm.clear_market(book) for book = {book}")
+            except Exception as e:
+                LOGGER.warning(f"failure with mm.clear_market(book): {e}")
             LOGGER.info("Broadcasting Market Book")
             self.send_message(
                 payload=book,
@@ -94,16 +115,23 @@ class MarketMaker(MarketMakerBase):
             )
         try:
             self.broadcast_latest_prices()
-        except:
-            LOGGER.warning("Failure: mm.broadcast_latest_prices()")
+        except Exception as e:
+            LOGGER.warning(
+                f"Failure: mm.broadcast_latest_prices() in new_timestep: {e}"
+            )
         try:
             self.update_slot_books()
-        except:
-            LOGGER.warning("Failure: mm.update_slot_books()")
+        except Exception as e:
+            LOGGER.warning("Failure: mm.update_slot_books(): {e}")
 
-    def timestep_received_again(self, payload: SimTimestep) -> None:
+    def repeated_timestep(self, payload: SimTimestep) -> None:
         LOGGER.info("Received timestep again")
-        self.broadcast_latest_prices()
+        try:
+            self.broadcast_latest_prices()
+        except Exception as e:
+            LOGGER.warning(
+                f"Failure: mm.broadcast_latest_prices() in repeated_timestep: {e}"
+            )
 
     def check_market_creds(self, payload: AtnBid) -> RestfulResponse:
         """
@@ -134,7 +162,7 @@ class MarketMaker(MarketMakerBase):
         return RestfulResponse(Note="Has TaTradingRights; paid market fee")
 
     def atn_bid(self, payload: AtnBid) -> RestfulResponse:
-        ts_ns = int(self.latest_time_unix_s * 10**9)
+        ts_ns = int(self.time_s * 10**9)
         if self.universe_type == UniverseType.Dev:
             ts_ns += random.uniform(-(10**6), 10**6)
         rr = self.check_market_creds(payload)
@@ -153,7 +181,7 @@ class MarketMaker(MarketMakerBase):
                 Note=f"{payload.MarketSlotName} not run by {self.alias}!",
                 HttpStatusCode=422,
             )
-        if slot.StartUnixS - self.latest_time_unix_s < slot.Type.DurationMinutes * 60:
+        if slot.StartUnixS - self.time_s < slot.Type.DurationMinutes * 60:
             return RestfulResponse(
                 Note=f"Missed gate closing. Bid not accepted",
                 HttpStatusCode=422,
@@ -200,7 +228,7 @@ class MarketMaker(MarketMakerBase):
         for market_type in self.market_types:
             starts: List[int] = list(self.slot_books[market_type.Name].keys())
             if len(starts) > 0:
-                t = self.latest_time_unix_s
+                t = self.time_s
                 latest_market_start = max(list(filter(lambda x: x <= t, starts)))
                 slot = MarketSlot(
                     Type=market_type,
@@ -257,11 +285,7 @@ class MarketMaker(MarketMakerBase):
     ###################
 
     def dev_solve_for_clearing_price(self, book: MarketBook) -> MarketPrice:
-
-        return MarketPrice(
-            ValueTimes1000=35354,
-            Unit=MarketPriceUnit.USDPerMWh,
-        )
+        return self.hack_clearing_price[book.Slot.StartUnixS]
 
     def solve_for_clearing_price(self, book: MarketBook) -> MarketPrice:
         if self.universe_type == UniverseType.Dev:
@@ -279,7 +303,7 @@ class MarketMaker(MarketMakerBase):
 
     def update_slot_books(self):
         for market_type in self.market_types:
-            t = self.latest_time_unix_s
+            t = self.time_s
             gc_delta = market_type.GateClosingMinutes * 60
             market_delta = market_type.DurationMinutes * 60
             latest = math.floor(t / market_delta)
@@ -306,12 +330,12 @@ class MarketMaker(MarketMakerBase):
         return f"{market_type.Name}.{self.alias}.{self.latest_slot_start(market_type)}"
 
     def latest_slot_start(self, market_type: MarketTypeGt) -> int:
-        t = self.latest_time_unix_s
+        t = self.time_s
         market_delta = market_type.DurationMinutes * 60
         return math.floor(t / market_delta) * market_delta
 
     def last_slot_start(self, market_type: MarketTypeGt) -> int:
-        if int(self.latest_time_unix_s) == self.latest_slot_start(market_type):
+        if int(self.time_s) == self.latest_slot_start(market_type):
             return self.latest_slot_start(market_type) - self.market_slot_duration_s(
                 market_type
             )

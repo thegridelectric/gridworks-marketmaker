@@ -30,12 +30,6 @@ async def main():
     return mm.info
 
 
-# @app.get("/base-g-nodes/by-id/{g_node_id}", response_model=BasegnodeGt)
-# async def get_base_g_node(g_node_id: str):
-#     gn = await gnf.g_node_from_id(g_node_id)
-#     return gn
-
-
 @app.post("/bid/", response_model=RestfulResponse)
 async def tavalidatorcert_algo_create_received(
     payload: AtnBid,
