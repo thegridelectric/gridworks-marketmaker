@@ -1,20 +1,20 @@
-"""Tests bid.ack type, version 000"""
+"""Tests market.price type, version 000"""
 import json
 
 import pytest
 from pydantic import ValidationError
 
+from gwmm.enums import MarketPriceUnit
 from gwmm.errors import SchemaError
-from gwmm.schemata import BidAck_Maker as Maker
+from gwmm.schemata import MarketPrice_Maker as Maker
 
 
-def test_bid_ack_generated() -> None:
+def test_market_price_generated() -> None:
 
     d = {
-        "BidIdx": 23,
-        "BidUid": "d7842e0c-5d67-4d1e-b231-9bb98e1a2406",
-        "MarketSlotName": "rt60gate5.d1.isone.ver.keene.1577854800",
-        "TypeName": "bid.ack",
+        "ValueTimes1000": 35342,
+        "UnitGtEnumSymbol": "00000000",
+        "TypeName": "market.price",
         "Version": "000",
     }
 
@@ -33,9 +33,8 @@ def test_bid_ack_generated() -> None:
 
     # test Maker init
     t = Maker(
-        bid_idx=gtuple.BidIdx,
-        bid_uid=gtuple.BidUid,
-        market_slot_name=gtuple.MarketSlotName,
+        value_times1000=gtuple.ValueTimes1000,
+        unit=gtuple.Unit,
     ).tuple
     assert t == gtuple
 
@@ -49,17 +48,12 @@ def test_bid_ack_generated() -> None:
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d)
-    del d2["BidIdx"]
+    del d2["ValueTimes1000"]
     with pytest.raises(SchemaError):
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d)
-    del d2["BidUid"]
-    with pytest.raises(SchemaError):
-        Maker.dict_to_tuple(d2)
-
-    d2 = dict(d)
-    del d2["MarketSlotName"]
+    del d2["UnitGtEnumSymbol"]
     with pytest.raises(SchemaError):
         Maker.dict_to_tuple(d2)
 
@@ -67,9 +61,12 @@ def test_bid_ack_generated() -> None:
     # Behavior on incorrect types
     ######################################
 
-    d2 = dict(d, BidIdx="23.1")
+    d2 = dict(d, ValueTimes1000="35342.1")
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
+
+    d2 = dict(d, UnitGtEnumSymbol="hi")
+    Maker.dict_to_tuple(d2).Unit = MarketPriceUnit.default()
 
     ######################################
     # SchemaError raised if TypeName is incorrect
@@ -78,13 +75,3 @@ def test_bid_ack_generated() -> None:
     d2 = dict(d, TypeName="not the type alias")
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
-
-    ######################################
-    # SchemaError raised if primitive attributes do not have appropriate property_format
-    ######################################
-
-    d2 = dict(d, BidUid="d4be12d5-33ba-4f1f-b9e5")
-    with pytest.raises(ValidationError):
-        Maker.dict_to_tuple(d2)
-
-    # End of Test

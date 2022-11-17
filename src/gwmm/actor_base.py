@@ -1,5 +1,6 @@
 import enum
 import functools
+import json
 import logging
 import threading
 import time
@@ -22,6 +23,7 @@ from gwmm.config import Settings
 from gwmm.enums import GNodeRole
 from gwmm.enums import MessageCategory
 from gwmm.enums import MessageCategorySymbol
+from gwmm.enums import UniverseType
 from gwmm.errors import SchemaError
 from gwmm.schemata import HeartbeatA
 from gwmm.schemata import SimTimestep
@@ -80,6 +82,8 @@ LOG_FORMAT = (
 )
 LOGGER = logging.getLogger(__name__)
 
+LOGGER.setLevel(logging.INFO)
+
 
 class ActorBase(ABC):
     SHUTDOWN_INTERVAL = 0.1
@@ -88,16 +92,13 @@ class ActorBase(ABC):
         self,
         settings: Settings,
     ):
-        self.settings: Settings = settings
-        self.logging_level: str = logging.INFO
-        self.set_logging_level()
-        LOGGER.setLevel(self.logging_level)
-        self.alias: str = settings.g_node_alias
-        self.g_node_instance_id: str = settings.g_node_instance_id
-        self.agent_shutting_down_part_one: bool = False
         self.latest_routing_key: Optional[str] = None
+        self.settings: Settings = settings
+        self.agent_shutting_down_part_one: bool = False
+        self.alias: str = settings.g_node_alias
         self.g_node_role: GNodeRole = GNodeRole(settings.g_node_role_value)
         self.rabbit_role: RabbitRole = RabbitRolebyRole[self.g_node_role]
+        self.universe_type: UniverseType = UniverseType(settings.universe_type_value)
         self.actor_main_stopped: bool = False
 
         adder = "-F" + str(uuid.uuid4()).split("-")[0][0:3]
@@ -150,14 +151,6 @@ class ActorBase(ABC):
         self._stopping = False
         self._stopped = True
 
-    def set_logging_level(self) -> None:
-        if self.settings.log_level == "DEBUG":
-            self.logging_level = logging.DEBUG
-        elif self.settings.log_level == "INFO":
-            self.logging_level = logging.INFO
-        elif self.settings.log_level == "WARNING":
-            self.log_level = logging.WARNING
-
     @no_type_check
     def on_message(self, _unused_channel, basic_deliver, properties, body) -> None:
         """Invoked by pika when a message is delivered from RabbitMQ. If a message
@@ -181,8 +174,8 @@ class ActorBase(ABC):
         :param bytes body: The message body
         """
         self.latest_routing_key = basic_deliver.routing_key
-        LOGGER.debug(
-            f"{self.alias}: Got {basic_deliver.routing_key} with delivery tag {basic_deliver.delivery_tag}"
+        LOGGER.warning(
+            f"In actor_base on_message. Got {basic_deliver.routing_key} with delivery tag {basic_deliver.delivery_tag}"
         )
         self.acknowledge_message(basic_deliver.delivery_tag)
         try:
@@ -302,11 +295,6 @@ class ActorBase(ABC):
                 correlation_id=correlation_id,
             )
         elif message_category is MessageCategory.RabbitJsonBroadcast:
-            if radio_channel is not None:
-                if not property_format.is_lrd_alias_format(radio_channel):
-                    raise Exception(
-                        f"(actor_base line 307) radio_channel must have LrdAliasFormat. Got {radio_channel}"
-                    )
             routing_key = self.broadcast_routing_key(
                 payload=payload, radio_channel=radio_channel
             )
@@ -359,7 +347,7 @@ class ActorBase(ABC):
     # Core Rabbit infrastructure
     ########################
 
-    def on_rabbit_infrastructure_ready(self) -> None:
+    def on_rabbit_ready(self) -> None:
         pass
 
     def flush_consumer(self) -> None:
@@ -796,7 +784,7 @@ class ActorBase(ABC):
         """
         LOGGER.info("Publish channel opened")
         self._publish_channel = channel
-        self.on_rabbit_infrastructure_ready()
+        self.on_rabbit_ready()
         self.add_on_publish_channel_close_callback()
 
     def add_on_publish_channel_close_callback(self) -> None:
@@ -914,12 +902,17 @@ class ActorBase(ABC):
         self, payload: HeartbeatA, radio_channel: Optional[str]
     ) -> str:
         msg_type = MessageCategorySymbol.rjb.value
-        from_lrh_alias = self.alias.replace(".", "-")
+        from_alias_lrh = self.alias.replace(".", "-")
         from_role = self.rabbit_role.value
+        type_name_lrh = payload.TypeName.replace(".", "-")
         if radio_channel is None:
-            return f"{msg_type}.{from_lrh_alias}.{from_role}.{payload.TypeName}"
+            return f"{msg_type}.{from_alias_lrh}.{from_role}.{type_name_lrh}"
         else:
-            return f"{msg_type}.{from_lrh_alias}.{from_role}.{payload.TypeName}.{radio_channel}"
+            if not property_format.is_lrd_alias_format(radio_channel):
+                raise Exception(
+                    f"radio_channel must have LrdAliasFormat. Got {radio_channel}"
+                )
+            return f"{msg_type}.{from_alias_lrh}.{from_role}.{type_name_lrh}.{radio_channel}"
 
     def direct_routing_key(
         self, to_role: GNodeRole, payload: HeartbeatA, to_g_node_alias: str
@@ -1064,3 +1057,17 @@ class ActorBase(ABC):
     def commence_shutting_down(self) -> None:
         self.agent_shutting_down_part_one = True
         self.prepare_for_death()
+
+    ###################################
+    # Time related
+    ###################################
+
+    # look for def timestep_200_received(self, payload: SimRTcTimestep200Payload) in old django
+    def sim_timestep_received(self, payload: SimTimestep) -> None:
+        pass
+
+    def new_timestep(self, payload: SimTimestep) -> None:
+        pass
+
+    def timestep_received_again(self, payload: SimTimestep) -> None:
+        pass

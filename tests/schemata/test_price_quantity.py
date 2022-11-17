@@ -4,8 +4,8 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from gwmm.enums import BidPriceUnit
-from gwmm.enums import BidQuantityUnit
+from gwmm.enums import MarketPriceUnit
+from gwmm.enums import MarketQuantityUnit
 from gwmm.errors import SchemaError
 from gwmm.schemata import PriceQuantity_Maker as Maker
 
@@ -92,10 +92,10 @@ def test_price_quantity_generated() -> None:
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d, PriceUnitGtEnumSymbol="hi")
-    Maker.dict_to_tuple(d2).PriceUnit = BidPriceUnit.default()
+    Maker.dict_to_tuple(d2).PriceUnit = MarketPriceUnit.default()
 
     d2 = dict(d, QuantityUnitGtEnumSymbol="hi")
-    Maker.dict_to_tuple(d2).QuantityUnit = BidQuantityUnit.default()
+    Maker.dict_to_tuple(d2).QuantityUnit = MarketQuantityUnit.default()
 
     d2 = dict(d, InjectionIsPositive="this is not a boolean")
     with pytest.raises(ValidationError):

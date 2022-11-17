@@ -4,7 +4,7 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from gwmm.enums import BidPriceUnit
+from gwmm.enums import MarketPriceUnit
 from gwmm.errors import SchemaError
 from gwmm.schemata import LatestPrice_Maker as Maker
 
@@ -12,11 +12,11 @@ from gwmm.schemata import LatestPrice_Maker as Maker
 def test_latest_price_generated() -> None:
 
     d = {
-        "FromGNodeAlias": "dw1.isone.ver.keene",
-        "FroGNodeInstanceId": "f0eaf540-94c8-4f85-a671-395ab86d0392",
+        "FromGNodeAlias": "d1.isone.ver.keene",
+        "FromGNodeInstanceId": "f0eaf540-94c8-4f85-a671-395ab86d0392",
         "PriceTimes1000": 32134,
         "PriceUnitGtEnumSymbol": "00000000",
-        "MarketSlotName": "rt60gate5.dw1.isone.ver.keene.1577854800",
+        "MarketSlotName": "rt60gate5.d1.isone.ver.keene.1577854800",
         "IrlTimeUtc": "2021-01-01T05:00:00+00:00",
         "MessageId": "03d27b8e-f6b3-40c5-afe8-880d12921710",
         "TypeName": "latest.price",
@@ -39,7 +39,7 @@ def test_latest_price_generated() -> None:
     # test Maker init
     t = Maker(
         from_g_node_alias=gtuple.FromGNodeAlias,
-        fro_g_node_instance_id=gtuple.FroGNodeInstanceId,
+        from_g_node_instance_id=gtuple.FromGNodeInstanceId,
         price_times1000=gtuple.PriceTimes1000,
         price_unit=gtuple.PriceUnit,
         market_slot_name=gtuple.MarketSlotName,
@@ -63,7 +63,7 @@ def test_latest_price_generated() -> None:
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d)
-    del d2["FroGNodeInstanceId"]
+    del d2["FromGNodeInstanceId"]
     with pytest.raises(SchemaError):
         Maker.dict_to_tuple(d2)
 
@@ -105,7 +105,7 @@ def test_latest_price_generated() -> None:
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d, PriceUnitGtEnumSymbol="hi")
-    Maker.dict_to_tuple(d2).PriceUnit = BidPriceUnit.default()
+    Maker.dict_to_tuple(d2).PriceUnit = MarketPriceUnit.default()
 
     ######################################
     # SchemaError raised if TypeName is incorrect
@@ -123,7 +123,7 @@ def test_latest_price_generated() -> None:
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
 
-    d2 = dict(d, FroGNodeInstanceId="d4be12d5-33ba-4f1f-b9e5")
+    d2 = dict(d, FromGNodeInstanceId="d4be12d5-33ba-4f1f-b9e5")
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
 

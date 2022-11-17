@@ -3,7 +3,7 @@ version: "3.5"
 services:
   dev-registry-broker:
     container_name: dev-world-rabbit
-    image: "jessmillar/dev-world-rabbit-x86:latest"
+    image: "jessmillar/dev-world-rabbit-x86:chaos__4888a25__20221116"
     ports:
       - 1885:1885
       - 4369:4369

@@ -90,7 +90,7 @@ def check_is_bit(candidate: int) -> None:
 
 def is_lrd_alias_format(candidate: str) -> bool:
     """Lowercase AlphanumericStrings separated by dots (i.e. periods), with most
-    significant word to the left.  I.e. `dw1.ne` is the child of `dw1`.
+    significant word to the left.  I.e. `d1.ne` is the child of `d1`.
     Checking the format cannot verify the significance of words. All
     words must be alphanumeric. Most significant word must start with
     an alphabet charecter
@@ -119,14 +119,14 @@ def is_lrd_alias_format(candidate: str) -> bool:
 
 def check_is_lrd_alias_format(candidate: str) -> None:
     """Lowercase AlphanumericStrings separated by dots (i.e. periods), with most
-    significant word to the left.  I.e. `dw1.ne` is the child of `dw1`.
+    significant word to the left.  I.e. `d1.ne` is the child of `d1`.
     Checking the format cannot verify the significance of words. All
     words must be alphanumeric. Most significant word must start with
     an alphabet charecter
 
 
     Raises:
-        ValueError: if candidate is not of lrd format (e.g. dw1.iso.me.apple)
+        ValueError: if candidate is not of lrd format (e.g. d1.iso.me.apple)
     """
     try:
         x = candidate.split(".")
@@ -148,7 +148,7 @@ def check_is_lrd_alias_format(candidate: str) -> None:
 
 def is_lru_alias_format(candidate: str) -> bool:
     """AlphanumericStrings separated by underscores, with most
-    significant word to the left.  I.e. `dw1.ne` is the child of `dw1`.
+    significant word to the left.  I.e. `d1.ne` is the child of `d1`.
     Checking the format cannot verify the significance of words. All
     words must be alphanumeric. Most significant word must start with
     an alphabet charecter"""
@@ -170,7 +170,7 @@ def is_lru_alias_format(candidate: str) -> bool:
 
 def is_lrh_alias_format(candidate: str) -> bool:
     """AlphanumericStrings separated by hyphens, with most
-    significant word to the left.  I.e. `dw1.ne` is the child of `dw1`.
+    significant word to the left.  I.e. `d1.ne` is the child of `d1`.
     Checking the format cannot verify the significance of words. All
     words must be alphanumeric. Most significant word must start with
     an alphabet charecter"""
@@ -314,41 +314,30 @@ def check_is_uuid_canonical_textual(candidate: str) -> None:
         raise ValueError("Word 4 not of length 12")
 
 
-def is_market_type_alias_lrd_format(candidate: str) -> bool:
-    try:
-        x = candidate.split(".")
-    except AttributeError:
-        return False
-    if not x[0] in MarketType.by_id.keys():
-        return False
-    g_node_alias = ".".join(x[1:])
-    return is_lrd_alias_format(g_node_alias)
-
-
 def is_market_slot_name_lrd_format(candidate: str) -> bool:
     try:
-        x = candidate.split(".")
+        words = candidate.split(".")
     except AttributeError:
         return False
-    slot_start = x[-1]
-    if len(slot_start) != 10:
-        return False
     try:
-        slot_start = int(slot_start)
+        words[2]
+    except:
+        return False
+    market_type_name = words[0]
+    market_maker_alias = ".".join(words[1:-1])
+    try:
+        slot_start = int(words[-1])
     except ValueError:
         return False
-    if slot_start % 300 != 0:
-        return False
 
-    market_type_alias_lrd = ".".join(x[:-1])
-    if not is_market_type_alias_lrd_format(market_type_alias_lrd):
+    if market_type_name not in MarketType.by_id.keys():
         return False
-
-    market_type = MarketType.by_id[market_type_alias_lrd.split(".")[0]]
-    if not slot_start % (market_type.duration_minutes * 60) == 0:
-        print(
-            f"market_slot_start_s mod {(market_type.duration_minutes * 60)} must be 0"
-        )
+    market_type = MarketType.by_id[market_type_name]
+    if not is_lrd_alias_format(market_maker_alias):
+        return False
+    if not is_reasonable_unix_time_s(slot_start):
+        return False
+    if (slot_start % (market_type.duration_minutes * 60)) != 0:
         return False
 
     return True
