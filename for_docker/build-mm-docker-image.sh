@@ -5,7 +5,7 @@ SECOND_DOCKER_NAME_COMPONENT="marketmaker"
 DOCKER_IMAGE_NAME="${FIRST_DOCKER_NAME_COMPONENT}/${SECOND_DOCKER_NAME_COMPONENT}"
 
 set -euo pipefail
-cp GNodeFactoryDockerfile ../Dockerfile
+cp MarketMakerDockerfile ../Dockerfile
 cd ..
 
 if [[ $(git status --untracked-files=no --porcelain) != '' ]]; then
