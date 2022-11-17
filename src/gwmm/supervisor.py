@@ -57,8 +57,9 @@ class Supervisor(ActorBase):
             f"Received heartbeat from {from_alias} of role {from_role.value}"
         )
 
-    # @property
-    # def latest_time_utc(self) -> Optional(pendulum.DateTime):
-    #     if self.latest_time_unix_s is None:
-    #         return None
-    #     return pendulum.from_timestamp(self.latest_time_unix_s)
+    def time_utc_str(self) -> str:
+        if self.latest_time_unix_s is None:
+            return ""
+        return pendulum.from_timestamp(self.latest_time_unix_s).strftime(
+            "%m/%d/%Y, %H:%M"
+        )

@@ -4,7 +4,7 @@ from typing import List
 from fastapi_utils.enums import StrEnum
 
 
-class MarketTypeAlias(StrEnum):
+class MarketTypeName(StrEnum):
     unknown = auto()
     rt5gate5 = auto()
     rt60gate5 = auto()
@@ -15,7 +15,7 @@ class MarketTypeAlias(StrEnum):
     rt60gate30b = auto()
 
     @classmethod
-    def default(cls) -> "MarketTypeAlias":
+    def default(cls) -> "MarketTypeName":
         return cls.unknown
 
     @classmethod

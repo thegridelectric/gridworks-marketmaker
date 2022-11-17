@@ -12,14 +12,14 @@ from pydantic import BaseModel
 from pydantic import validator
 
 import gwmm.property_format as property_format
-from gwmm.enums import BidPriceUnit
+from gwmm.enums import MarketPriceUnit
 from gwmm.errors import SchemaError
 from gwmm.message import as_enum
 from gwmm.property_format import predicate_validator
 
 
-class BidPriceUnit000SchemaEnum:
-    enum_name: str = "bid.price.unit.000"
+class MarketPriceUnit000SchemaEnum:
+    enum_name: str = "market.price.unit.000"
     symbols: List[str] = [
         "00000000",
     ]
@@ -31,11 +31,11 @@ class BidPriceUnit000SchemaEnum:
         return False
 
 
-class BidPriceUnit000(StrEnum):
+class MarketPriceUnit000(StrEnum):
     USDPerMWh = auto()
 
     @classmethod
-    def default(cls) -> "BidPriceUnit000":
+    def default(cls) -> "MarketPriceUnit000":
         return cls.USDPerMWh
 
     @classmethod
@@ -43,37 +43,37 @@ class BidPriceUnit000(StrEnum):
         return [elt.value for elt in cls]
 
 
-class BidPriceUnitMap:
+class MarketPriceUnitMap:
     @classmethod
-    def type_to_local(cls, symbol: str) -> BidPriceUnit:
-        if not BidPriceUnit000SchemaEnum.is_symbol(symbol):
-            raise SchemaError(f"{symbol} must belong to BidPriceUnit000 symbols")
+    def type_to_local(cls, symbol: str) -> MarketPriceUnit:
+        if not MarketPriceUnit000SchemaEnum.is_symbol(symbol):
+            raise SchemaError(f"{symbol} must belong to MarketPriceUnit000 symbols")
         versioned_enum = cls.type_to_versioned_enum_dict[symbol]
-        return as_enum(versioned_enum, BidPriceUnit, BidPriceUnit.default())
+        return as_enum(versioned_enum, MarketPriceUnit, MarketPriceUnit.default())
 
     @classmethod
-    def local_to_type(cls, bid_price_unit: BidPriceUnit) -> str:
-        if not isinstance(bid_price_unit, BidPriceUnit):
-            raise SchemaError(f"{bid_price_unit} must be of type {BidPriceUnit}")
+    def local_to_type(cls, market_price_unit: MarketPriceUnit) -> str:
+        if not isinstance(market_price_unit, MarketPriceUnit):
+            raise SchemaError(f"{market_price_unit} must be of type {MarketPriceUnit}")
         versioned_enum = as_enum(
-            bid_price_unit, BidPriceUnit000, BidPriceUnit000.default()
+            market_price_unit, MarketPriceUnit000, MarketPriceUnit000.default()
         )
         return cls.versioned_enum_to_type_dict[versioned_enum]
 
-    type_to_versioned_enum_dict: Dict[str, BidPriceUnit000] = {
-        "00000000": BidPriceUnit000.USDPerMWh,
+    type_to_versioned_enum_dict: Dict[str, MarketPriceUnit000] = {
+        "00000000": MarketPriceUnit000.USDPerMWh,
     }
 
-    versioned_enum_to_type_dict: Dict[BidPriceUnit000, str] = {
-        BidPriceUnit000.USDPerMWh: "00000000",
+    versioned_enum_to_type_dict: Dict[MarketPriceUnit000, str] = {
+        MarketPriceUnit000.USDPerMWh: "00000000",
     }
 
 
 class LatestPrice(BaseModel):
     FromGNodeAlias: str  #
-    FroGNodeInstanceId: str  #
+    FromGNodeInstanceId: str  #
     PriceTimes1000: int  #
-    PriceUnit: BidPriceUnit  #
+    PriceUnit: MarketPriceUnit  #
     MarketSlotName: str  #
     IrlTimeUtc: Optional[str] = None
     MessageId: Optional[str] = None
@@ -84,13 +84,13 @@ class LatestPrice(BaseModel):
         "FromGNodeAlias", property_format.is_lrd_alias_format
     )
 
-    _validator_fro_g_node_instance_id = predicate_validator(
-        "FroGNodeInstanceId", property_format.is_uuid_canonical_textual
+    _validator_from_g_node_instance_id = predicate_validator(
+        "FromGNodeInstanceId", property_format.is_uuid_canonical_textual
     )
 
     @validator("PriceUnit")
-    def _validator_price_unit(cls, v: BidPriceUnit) -> BidPriceUnit:
-        return as_enum(v, BidPriceUnit, BidPriceUnit.USDPerMWh)
+    def _validator_price_unit(cls, v: MarketPriceUnit) -> MarketPriceUnit:
+        return as_enum(v, MarketPriceUnit, MarketPriceUnit.USDPerMWh)
 
     _validator_market_slot_name = predicate_validator(
         "MarketSlotName", property_format.is_market_slot_name_lrd_format
@@ -115,8 +115,8 @@ class LatestPrice(BaseModel):
     def as_dict(self) -> Dict[str, Any]:
         d = self.dict()
         del d["PriceUnit"]
-        PriceUnit = as_enum(self.PriceUnit, BidPriceUnit, BidPriceUnit.default())
-        d["PriceUnitGtEnumSymbol"] = BidPriceUnitMap.local_to_type(PriceUnit)
+        PriceUnit = as_enum(self.PriceUnit, MarketPriceUnit, MarketPriceUnit.default())
+        d["PriceUnitGtEnumSymbol"] = MarketPriceUnitMap.local_to_type(PriceUnit)
         if d["IrlTimeUtc"] is None:
             del d["IrlTimeUtc"]
         if d["MessageId"] is None:
@@ -134,9 +134,9 @@ class LatestPrice_Maker:
     def __init__(
         self,
         from_g_node_alias: str,
-        fro_g_node_instance_id: str,
+        from_g_node_instance_id: str,
         price_times1000: int,
-        price_unit: BidPriceUnit,
+        price_unit: MarketPriceUnit,
         market_slot_name: str,
         irl_time_utc: Optional[str],
         message_id: Optional[str],
@@ -144,7 +144,7 @@ class LatestPrice_Maker:
 
         self.tuple = LatestPrice(
             FromGNodeAlias=from_g_node_alias,
-            FroGNodeInstanceId=fro_g_node_instance_id,
+            FromGNodeInstanceId=from_g_node_instance_id,
             PriceTimes1000=price_times1000,
             PriceUnit=price_unit,
             MarketSlotName=market_slot_name,
@@ -172,16 +172,18 @@ class LatestPrice_Maker:
         d2 = dict(d)
         if "FromGNodeAlias" not in d2.keys():
             raise SchemaError(f"dict {d2} missing FromGNodeAlias")
-        if "FroGNodeInstanceId" not in d2.keys():
-            raise SchemaError(f"dict {d2} missing FroGNodeInstanceId")
+        if "FromGNodeInstanceId" not in d2.keys():
+            raise SchemaError(f"dict {d2} missing FromGNodeInstanceId")
         if "PriceTimes1000" not in d2.keys():
             raise SchemaError(f"dict {d2} missing PriceTimes1000")
         if "PriceUnitGtEnumSymbol" not in d2.keys():
             raise SchemaError(f"dict {d2} missing PriceUnitGtEnumSymbol")
-        if d2["PriceUnitGtEnumSymbol"] in BidPriceUnit000SchemaEnum.symbols:
-            d2["PriceUnit"] = BidPriceUnitMap.type_to_local(d2["PriceUnitGtEnumSymbol"])
+        if d2["PriceUnitGtEnumSymbol"] in MarketPriceUnit000SchemaEnum.symbols:
+            d2["PriceUnit"] = MarketPriceUnitMap.type_to_local(
+                d2["PriceUnitGtEnumSymbol"]
+            )
         else:
-            d2["PriceUnit"] = BidPriceUnit.default()
+            d2["PriceUnit"] = MarketPriceUnit.default()
         if "MarketSlotName" not in d2.keys():
             raise SchemaError(f"dict {d2} missing MarketSlotName")
         if "IrlTimeUtc" not in d2.keys():
@@ -193,7 +195,7 @@ class LatestPrice_Maker:
 
         return LatestPrice(
             FromGNodeAlias=d2["FromGNodeAlias"],
-            FroGNodeInstanceId=d2["FroGNodeInstanceId"],
+            FromGNodeInstanceId=d2["FromGNodeInstanceId"],
             PriceTimes1000=d2["PriceTimes1000"],
             PriceUnit=d2["PriceUnit"],
             MarketSlotName=d2["MarketSlotName"],

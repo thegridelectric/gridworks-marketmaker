@@ -10,14 +10,14 @@ from fastapi_utils.enums import StrEnum
 from pydantic import BaseModel
 from pydantic import validator
 
-from gwmm.enums import BidPriceUnit
-from gwmm.enums import BidQuantityUnit
+from gwmm.enums import MarketPriceUnit
+from gwmm.enums import MarketQuantityUnit
 from gwmm.errors import SchemaError
 from gwmm.message import as_enum
 
 
-class BidPriceUnit000SchemaEnum:
-    enum_name: str = "bid.price.unit.000"
+class MarketPriceUnit000SchemaEnum:
+    enum_name: str = "market.price.unit.000"
     symbols: List[str] = [
         "00000000",
     ]
@@ -29,11 +29,11 @@ class BidPriceUnit000SchemaEnum:
         return False
 
 
-class BidPriceUnit000(StrEnum):
+class MarketPriceUnit000(StrEnum):
     USDPerMWh = auto()
 
     @classmethod
-    def default(cls) -> "BidPriceUnit000":
+    def default(cls) -> "MarketPriceUnit000":
         return cls.USDPerMWh
 
     @classmethod
@@ -41,34 +41,34 @@ class BidPriceUnit000(StrEnum):
         return [elt.value for elt in cls]
 
 
-class BidPriceUnitMap:
+class MarketPriceUnitMap:
     @classmethod
-    def type_to_local(cls, symbol: str) -> BidPriceUnit:
-        if not BidPriceUnit000SchemaEnum.is_symbol(symbol):
-            raise SchemaError(f"{symbol} must belong to BidPriceUnit000 symbols")
+    def type_to_local(cls, symbol: str) -> MarketPriceUnit:
+        if not MarketPriceUnit000SchemaEnum.is_symbol(symbol):
+            raise SchemaError(f"{symbol} must belong to MarketPriceUnit000 symbols")
         versioned_enum = cls.type_to_versioned_enum_dict[symbol]
-        return as_enum(versioned_enum, BidPriceUnit, BidPriceUnit.default())
+        return as_enum(versioned_enum, MarketPriceUnit, MarketPriceUnit.default())
 
     @classmethod
-    def local_to_type(cls, bid_price_unit: BidPriceUnit) -> str:
-        if not isinstance(bid_price_unit, BidPriceUnit):
-            raise SchemaError(f"{bid_price_unit} must be of type {BidPriceUnit}")
+    def local_to_type(cls, market_price_unit: MarketPriceUnit) -> str:
+        if not isinstance(market_price_unit, MarketPriceUnit):
+            raise SchemaError(f"{market_price_unit} must be of type {MarketPriceUnit}")
         versioned_enum = as_enum(
-            bid_price_unit, BidPriceUnit000, BidPriceUnit000.default()
+            market_price_unit, MarketPriceUnit000, MarketPriceUnit000.default()
         )
         return cls.versioned_enum_to_type_dict[versioned_enum]
 
-    type_to_versioned_enum_dict: Dict[str, BidPriceUnit000] = {
-        "00000000": BidPriceUnit000.USDPerMWh,
+    type_to_versioned_enum_dict: Dict[str, MarketPriceUnit000] = {
+        "00000000": MarketPriceUnit000.USDPerMWh,
     }
 
-    versioned_enum_to_type_dict: Dict[BidPriceUnit000, str] = {
-        BidPriceUnit000.USDPerMWh: "00000000",
+    versioned_enum_to_type_dict: Dict[MarketPriceUnit000, str] = {
+        MarketPriceUnit000.USDPerMWh: "00000000",
     }
 
 
-class BidQuantityUnit000SchemaEnum:
-    enum_name: str = "bid.quantity.unit.000"
+class MarketQuantityUnit000SchemaEnum:
+    enum_name: str = "market.quantity.unit.000"
     symbols: List[str] = [
         "00000000",
         "c272f3b3",
@@ -81,12 +81,12 @@ class BidQuantityUnit000SchemaEnum:
         return False
 
 
-class BidQuantityUnit000(StrEnum):
+class MarketQuantityUnit000(StrEnum):
     AvgMW = auto()
     AvgkW = auto()
 
     @classmethod
-    def default(cls) -> "BidQuantityUnit000":
+    def default(cls) -> "MarketQuantityUnit000":
         return cls.AvgMW
 
     @classmethod
@@ -94,61 +94,65 @@ class BidQuantityUnit000(StrEnum):
         return [elt.value for elt in cls]
 
 
-class BidQuantityUnitMap:
+class MarketQuantityUnitMap:
     @classmethod
-    def type_to_local(cls, symbol: str) -> BidQuantityUnit:
-        if not BidQuantityUnit000SchemaEnum.is_symbol(symbol):
-            raise SchemaError(f"{symbol} must belong to BidQuantityUnit000 symbols")
+    def type_to_local(cls, symbol: str) -> MarketQuantityUnit:
+        if not MarketQuantityUnit000SchemaEnum.is_symbol(symbol):
+            raise SchemaError(f"{symbol} must belong to MarketQuantityUnit000 symbols")
         versioned_enum = cls.type_to_versioned_enum_dict[symbol]
-        return as_enum(versioned_enum, BidQuantityUnit, BidQuantityUnit.default())
+        return as_enum(versioned_enum, MarketQuantityUnit, MarketQuantityUnit.default())
 
     @classmethod
-    def local_to_type(cls, bid_quantity_unit: BidQuantityUnit) -> str:
-        if not isinstance(bid_quantity_unit, BidQuantityUnit):
-            raise SchemaError(f"{bid_quantity_unit} must be of type {BidQuantityUnit}")
+    def local_to_type(cls, market_quantity_unit: MarketQuantityUnit) -> str:
+        if not isinstance(market_quantity_unit, MarketQuantityUnit):
+            raise SchemaError(
+                f"{market_quantity_unit} must be of type {MarketQuantityUnit}"
+            )
         versioned_enum = as_enum(
-            bid_quantity_unit, BidQuantityUnit000, BidQuantityUnit000.default()
+            market_quantity_unit, MarketQuantityUnit000, MarketQuantityUnit000.default()
         )
         return cls.versioned_enum_to_type_dict[versioned_enum]
 
-    type_to_versioned_enum_dict: Dict[str, BidQuantityUnit000] = {
-        "00000000": BidQuantityUnit000.AvgMW,
-        "c272f3b3": BidQuantityUnit000.AvgkW,
+    type_to_versioned_enum_dict: Dict[str, MarketQuantityUnit000] = {
+        "00000000": MarketQuantityUnit000.AvgMW,
+        "c272f3b3": MarketQuantityUnit000.AvgkW,
     }
 
-    versioned_enum_to_type_dict: Dict[BidQuantityUnit000, str] = {
-        BidQuantityUnit000.AvgMW: "00000000",
-        BidQuantityUnit000.AvgkW: "c272f3b3",
+    versioned_enum_to_type_dict: Dict[MarketQuantityUnit000, str] = {
+        MarketQuantityUnit000.AvgMW: "00000000",
+        MarketQuantityUnit000.AvgkW: "c272f3b3",
     }
 
 
 class PriceQuantity(BaseModel):
     PriceTimes1000: int  #
     QuantityTimes1000: int  #
-    PriceUnit: BidPriceUnit  #
-    QuantityUnit: BidQuantityUnit  #
+    PriceUnit: MarketPriceUnit  #
+    QuantityUnit: MarketQuantityUnit  #
     InjectionIsPositive: bool  #
     TypeName: Literal["price.quantity"] = "price.quantity"
     Version: str = "000"
 
     @validator("PriceUnit")
-    def _validator_price_unit(cls, v: BidPriceUnit) -> BidPriceUnit:
-        return as_enum(v, BidPriceUnit, BidPriceUnit.USDPerMWh)
+    def _validator_price_unit(cls, v: MarketPriceUnit) -> MarketPriceUnit:
+        return as_enum(v, MarketPriceUnit, MarketPriceUnit.USDPerMWh)
 
     @validator("QuantityUnit")
-    def _validator_quantity_unit(cls, v: BidQuantityUnit) -> BidQuantityUnit:
-        return as_enum(v, BidQuantityUnit, BidQuantityUnit.AvgMW)
+    def _validator_quantity_unit(cls, v: MarketQuantityUnit) -> MarketQuantityUnit:
+        return as_enum(v, MarketQuantityUnit, MarketQuantityUnit.AvgMW)
 
     def as_dict(self) -> Dict[str, Any]:
         d = self.dict()
         del d["PriceUnit"]
-        PriceUnit = as_enum(self.PriceUnit, BidPriceUnit, BidPriceUnit.default())
-        d["PriceUnitGtEnumSymbol"] = BidPriceUnitMap.local_to_type(PriceUnit)
+        PriceUnit = as_enum(self.PriceUnit, MarketPriceUnit, MarketPriceUnit.default())
+        d["PriceUnitGtEnumSymbol"] = MarketPriceUnitMap.local_to_type(PriceUnit)
         del d["QuantityUnit"]
         QuantityUnit = as_enum(
-            self.QuantityUnit, BidQuantityUnit, BidQuantityUnit.default()
+            self.QuantityUnit, MarketQuantityUnit, MarketQuantityUnit.default()
         )
-        d["QuantityUnitGtEnumSymbol"] = BidQuantityUnitMap.local_to_type(QuantityUnit)
+        d["QuantityUnitGtEnumSymbol"] = MarketQuantityUnitMap.local_to_type(
+            QuantityUnit
+        )
         return d
 
     def as_type(self) -> str:
@@ -163,8 +167,8 @@ class PriceQuantity_Maker:
         self,
         price_times1000: int,
         quantity_times1000: int,
-        price_unit: BidPriceUnit,
-        quantity_unit: BidQuantityUnit,
+        price_unit: MarketPriceUnit,
+        quantity_unit: MarketQuantityUnit,
         injection_is_positive: bool,
     ):
 
@@ -200,18 +204,20 @@ class PriceQuantity_Maker:
             raise SchemaError(f"dict {d2} missing QuantityTimes1000")
         if "PriceUnitGtEnumSymbol" not in d2.keys():
             raise SchemaError(f"dict {d2} missing PriceUnitGtEnumSymbol")
-        if d2["PriceUnitGtEnumSymbol"] in BidPriceUnit000SchemaEnum.symbols:
-            d2["PriceUnit"] = BidPriceUnitMap.type_to_local(d2["PriceUnitGtEnumSymbol"])
+        if d2["PriceUnitGtEnumSymbol"] in MarketPriceUnit000SchemaEnum.symbols:
+            d2["PriceUnit"] = MarketPriceUnitMap.type_to_local(
+                d2["PriceUnitGtEnumSymbol"]
+            )
         else:
-            d2["PriceUnit"] = BidPriceUnit.default()
+            d2["PriceUnit"] = MarketPriceUnit.default()
         if "QuantityUnitGtEnumSymbol" not in d2.keys():
             raise SchemaError(f"dict {d2} missing QuantityUnitGtEnumSymbol")
-        if d2["QuantityUnitGtEnumSymbol"] in BidQuantityUnit000SchemaEnum.symbols:
-            d2["QuantityUnit"] = BidQuantityUnitMap.type_to_local(
+        if d2["QuantityUnitGtEnumSymbol"] in MarketQuantityUnit000SchemaEnum.symbols:
+            d2["QuantityUnit"] = MarketQuantityUnitMap.type_to_local(
                 d2["QuantityUnitGtEnumSymbol"]
             )
         else:
-            d2["QuantityUnit"] = BidQuantityUnit.default()
+            d2["QuantityUnit"] = MarketQuantityUnit.default()
         if "InjectionIsPositive" not in d2.keys():
             raise SchemaError(f"dict {d2} missing InjectionIsPositive")
         if "TypeName" not in d2.keys():

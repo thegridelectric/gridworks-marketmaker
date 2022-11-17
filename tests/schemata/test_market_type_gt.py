@@ -4,9 +4,9 @@ import json
 import pytest
 from pydantic import ValidationError
 
-from gwmm.enums import BidPriceUnit
-from gwmm.enums import BidQuantityUnit
-from gwmm.enums import MarketTypeAlias
+from gwmm.enums import MarketPriceUnit
+from gwmm.enums import MarketQuantityUnit
+from gwmm.enums import MarketTypeName
 from gwmm.enums import RecognizedCurrencyUnit
 from gwmm.errors import SchemaError
 from gwmm.schemata import MarketTypeGt_Maker as Maker
@@ -15,7 +15,7 @@ from gwmm.schemata import MarketTypeGt_Maker as Maker
 def test_market_type_gt_generated() -> None:
 
     d = {
-        "AliasGtEnumSymbol": "618f9c0a",
+        "NameGtEnumSymbol": "618f9c0a",
         "DurationMinutes": 60,
         "GateClosingMinutes": 30,
         "PriceUnitGtEnumSymbol": "00000000",
@@ -40,7 +40,7 @@ def test_market_type_gt_generated() -> None:
 
     # test Maker init
     t = Maker(
-        alias=gtuple.Alias,
+        name=gtuple.Name,
         duration_minutes=gtuple.DurationMinutes,
         gate_closing_minutes=gtuple.GateClosingMinutes,
         price_unit=gtuple.PriceUnit,
@@ -67,7 +67,7 @@ def test_market_type_gt_generated() -> None:
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d)
-    del d2["AliasGtEnumSymbol"]
+    del d2["NameGtEnumSymbol"]
     with pytest.raises(SchemaError):
         Maker.dict_to_tuple(d2)
 
@@ -100,8 +100,8 @@ def test_market_type_gt_generated() -> None:
     # Behavior on incorrect types
     ######################################
 
-    d2 = dict(d, AliasGtEnumSymbol="hi")
-    Maker.dict_to_tuple(d2).Alias = MarketTypeAlias.default()
+    d2 = dict(d, NameGtEnumSymbol="hi")
+    Maker.dict_to_tuple(d2).Name = MarketTypeName.default()
 
     d2 = dict(d, DurationMinutes="60.1")
     with pytest.raises(ValidationError):
@@ -112,10 +112,10 @@ def test_market_type_gt_generated() -> None:
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d, PriceUnitGtEnumSymbol="hi")
-    Maker.dict_to_tuple(d2).PriceUnit = BidPriceUnit.default()
+    Maker.dict_to_tuple(d2).PriceUnit = MarketPriceUnit.default()
 
     d2 = dict(d, QuantityUnitGtEnumSymbol="hi")
-    Maker.dict_to_tuple(d2).QuantityUnit = BidQuantityUnit.default()
+    Maker.dict_to_tuple(d2).QuantityUnit = MarketQuantityUnit.default()
 
     d2 = dict(d, CurrencyUnitGtEnumSymbol="hi")
     Maker.dict_to_tuple(d2).CurrencyUnit = RecognizedCurrencyUnit.default()

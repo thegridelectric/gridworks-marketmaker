@@ -2,33 +2,33 @@ from typing import Dict
 
 from pydantic import BaseModel
 
-from gwmm.enums import BidPriceUnit
-from gwmm.enums import BidQuantityUnit
-from gwmm.enums import MarketTypeAlias
+from gwmm.enums import MarketPriceUnit
+from gwmm.enums import MarketQuantityUnit
+from gwmm.enums import MarketTypeName
 from gwmm.enums import RecognizedCurrencyUnit
 
 
 class MarketType:
-    by_id: Dict[MarketTypeAlias, "MarketType"] = {}
+    by_id: Dict[MarketTypeName, "MarketType"] = {}
 
-    def __new__(cls, alias: MarketTypeAlias, *args, **kwargs) -> "MarketType":  # type: ignore
+    def __new__(cls, name: MarketTypeName, *args, **kwargs) -> "MarketType":  # type: ignore
         try:
-            return cls.by_id[alias]
+            return cls.by_id[name]
         except KeyError:
             instance = super().__new__(cls)
-            cls.by_id[alias] = instance
+            cls.by_id[name] = instance
             return instance
 
     def __init__(
         self,
-        alias: MarketTypeAlias,
+        name: MarketTypeName,
         duration_minutes: int,
         gate_closing_minutes: int,
-        price_unit: BidPriceUnit = BidPriceUnit.USDPerMWh,
-        quantity_unit: BidQuantityUnit = BidQuantityUnit.AvgMW,
+        price_unit: MarketPriceUnit = MarketPriceUnit.USDPerMWh,
+        quantity_unit: MarketQuantityUnit = MarketQuantityUnit.AvgMW,
         currency_unit: RecognizedCurrencyUnit = RecognizedCurrencyUnit.USD,
     ):
-        self.alias = alias
+        self.name = name
         self.duration_minutes = duration_minutes
         self.gate_closing_minutes = gate_closing_minutes
         self.price_unit = price_unit
@@ -36,37 +36,38 @@ class MarketType:
         self.currency_unit = currency_unit
 
     def __repr__(self) -> str:
-        s = f"MarketType {self.alias}: duration {self.duration_minutes} m, gate closing {self.gate_closing_minutes} m, {self.price_unit.value}, {self.quantity_unit.value}"
+        # s = f"MarketType {self.name}: duration {self.duration_minutes} m, gate closing {self.gate_closing_minutes} m, {self.price_unit.value}, {self.quantity_unit.value}"
+        s = self.name
         return s
 
 
 Rt5Gate5 = MarketType(
-    alias=MarketTypeAlias.rt5gate5, duration_minutes=5, gate_closing_minutes=5
+    name=MarketTypeName.rt5gate5, duration_minutes=5, gate_closing_minutes=5
 )
 
 Rt15Gate5 = MarketType(
-    alias=MarketTypeAlias.rt15gate5, duration_minutes=15, gate_closing_minutes=5
+    name=MarketTypeName.rt15gate5, duration_minutes=15, gate_closing_minutes=5
 )
 
 Rt30Gate5 = MarketType(
-    alias=MarketTypeAlias.rt30gate5, duration_minutes=30, gate_closing_minutes=5
+    name=MarketTypeName.rt30gate5, duration_minutes=30, gate_closing_minutes=5
 )
 
 Rt60Gate5 = MarketType(
-    alias=MarketTypeAlias.rt60gate5, duration_minutes=60, gate_closing_minutes=5
+    name=MarketTypeName.rt60gate5, duration_minutes=60, gate_closing_minutes=5
 )
 
 Rt60Gate30 = MarketType(
-    alias=MarketTypeAlias.rt60gate30, duration_minutes=60, gate_closing_minutes=30
+    name=MarketTypeName.rt60gate30, duration_minutes=60, gate_closing_minutes=30
 )
 
 Rt60Gate30B = MarketType(
-    alias=MarketTypeAlias.rt60gate30b,
+    name=MarketTypeName.rt60gate30b,
     duration_minutes=60,
     gate_closing_minutes=30,
-    quantity_unit=BidQuantityUnit.AvgkW,
+    quantity_unit=MarketQuantityUnit.AvgkW,
 )
 
 Da60 = MarketType(
-    alias=MarketTypeAlias.da60, duration_minutes=60, gate_closing_minutes=1440
+    name=MarketTypeName.da60, duration_minutes=60, gate_closing_minutes=1440
 )

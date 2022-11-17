@@ -123,7 +123,7 @@ from gwmm.errors import SchemaError
 <xsl:for-each select="$airtable//SchemaAttributes/SchemaAttribute[(Schema = $schema-id)]">
 
 
-<xsl:if test="(IsType = 'true') and ((IsList = 'true') or (normalize-space(SubTypeDataClass)=''))">
+<xsl:if test="(IsType = 'true')">
 <xsl:text>
 from gwmm.schemata.</xsl:text>
 <xsl:call-template name="python-case">
@@ -388,8 +388,7 @@ class </xsl:text>
     <xsl:call-template name="nt-case">
         <xsl:with-param name="mp-schema-text" select="SubMessageFormatAliasRoot" />
     </xsl:call-template>
-    <xsl:text>]
-    </xsl:text>
+    <xsl:text>]</xsl:text>
     <xsl:if test="(normalize-space(DefaultValue) !='')">
         <xsl:text> = </xsl:text>
         <xsl:value-of select="DefaultValue"/>
@@ -406,10 +405,6 @@ class </xsl:text>
     </xsl:text>
 </xsl:if>
 
-<xsl:if test="not(normalize-space(SubTypeDataClass) = '')">
-    <xsl:value-of select="Value"/><xsl:text>Id: Optional[str] = None
-    </xsl:text>
-</xsl:if>
 
 </xsl:for-each>
 

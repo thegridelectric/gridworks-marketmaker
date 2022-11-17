@@ -4,13 +4,12 @@ from typing import List
 from fastapi_utils.enums import StrEnum
 
 
-class BidQuantityUnit(StrEnum):
-    AvgMW = auto()
-    AvgkW = auto()
+class MarketPriceUnit(StrEnum):
+    USDPerMWh = auto()
 
     @classmethod
-    def default(cls) -> "BidQuantityUnit":
-        return cls.AvgMW
+    def default(cls) -> "MarketPriceUnit":
+        return cls.USDPerMWh
 
     @classmethod
     def values(cls) -> List[str]:
