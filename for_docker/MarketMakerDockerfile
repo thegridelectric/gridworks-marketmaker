@@ -1,7 +1,7 @@
 
-ARG REMOTE_BASE=jessmillar/g-node-factory-base:latest
+ARG BASE=jessmillar/mm-base:latest
 
-FROM $REMOTE_BASE AS app-base
+FROM $BASE AS app-base
 
 
 WORKDIR /app
