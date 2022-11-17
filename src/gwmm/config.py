@@ -16,7 +16,9 @@ class MarketPublic(BaseModel):
     universe: str = "dev"
     gnf_admin_addr: str = "RNMHG32VTIHTC7W3LZOEPTDGREL5IQGK46HKD3KBLZHYQUCAKLMT4G5ALI"
     gnf_api_root: str = "http://localhost:8000"
-    gwmm_api_root: str = "http://localhost:7999"
+    gnr_api_root: str = "http://localhost:7999"
+    world_api_root: str = "http://localhost:7998"
+    mm_api_root: str = "http://localhost:7997"
 
 
 class AlgoApiSecrets(BaseModel):
