@@ -8,6 +8,7 @@ from fastapi.responses import FileResponse
 from pydantic import ValidationError
 
 import gwmm.config as config
+from gwmm.api_utils import MarketMakerApi
 from gwmm.market_maker import MarketMaker
 from gwmm.schemata import AtnBid
 from gwmm.schemata import MarketMakerInfo
@@ -17,7 +18,7 @@ from gwmm.utils import RestfulResponse
 # Create FasatAPI instance
 app = FastAPI()
 
-mm = MarketMaker()
+mm = MarketMakerApi()
 
 
 @lru_cache()
@@ -30,8 +31,8 @@ async def main():
     return mm.info
 
 
-@app.post("/bid/", response_model=RestfulResponse)
-async def tavalidatorcert_algo_create_received(
+@app.post("/atn-bid/", response_model=RestfulResponse)
+async def atn_bid_received(
     payload: AtnBid,
 ):
     r = mm.atn_bid(payload=payload)

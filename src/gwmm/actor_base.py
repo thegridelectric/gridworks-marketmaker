@@ -96,6 +96,7 @@ class ActorBase(ABC):
         self.settings: Settings = settings
         self.agent_shutting_down_part_one: bool = False
         self.alias: str = settings.g_node_alias
+        self.g_node_instance_id: str = settings.g_node_instance_id
         self.g_node_role: GNodeRole = GNodeRole(settings.g_node_role_value)
         self.rabbit_role: RabbitRole = RabbitRolebyRole[self.g_node_role]
         self.universe_type: UniverseType = UniverseType(settings.universe_type_value)

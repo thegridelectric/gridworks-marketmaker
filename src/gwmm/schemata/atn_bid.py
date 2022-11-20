@@ -133,10 +133,10 @@ class AtnBid(BaseModel):
     BidderGNodeInstanceId: str  #
     MarketSlotName: str  #
     BidList: List[PriceQuantityUnitless]  #
-    InjectionIsPositive: bool  #
-    PriceUnit: MarketPriceUnit  #
-    QuantityUnit: MarketQuantityUnit  #
-    MarketFeeTxId: str  #
+    InjectionIsPositive: bool = False  #
+    PriceUnit: MarketPriceUnit = MarketPriceUnit.USDPerMWh  #
+    QuantityUnit: MarketQuantityUnit = MarketQuantityUnit.AvgMW  #
+    SignedMarketFeeTxn: str  #
     TypeName: Literal["atn.bid"] = "atn.bid"
     Version: str = "000"
 
@@ -169,8 +169,8 @@ class AtnBid(BaseModel):
     def _validator_quantity_unit(cls, v: MarketQuantityUnit) -> MarketQuantityUnit:
         return as_enum(v, MarketQuantityUnit, MarketQuantityUnit.AvgMW)
 
-    _validator_market_fee_tx_id = predicate_validator(
-        "MarketFeeTxId", property_format.is_algo_address_string_format
+    _validator_signed_market_fee_txn = predicate_validator(
+        "SignedMarketFeeTxn", property_format.is_algo_msg_pack_encoded
     )
 
     def as_dict(self) -> Dict[str, Any]:
@@ -210,7 +210,7 @@ class AtnBid_Maker:
         injection_is_positive: bool,
         price_unit: MarketPriceUnit,
         quantity_unit: MarketQuantityUnit,
-        market_fee_tx_id: str,
+        signed_market_fee_txn: str,
     ):
 
         self.tuple = AtnBid(
@@ -221,7 +221,7 @@ class AtnBid_Maker:
             InjectionIsPositive=injection_is_positive,
             PriceUnit=price_unit,
             QuantityUnit=quantity_unit,
-            MarketFeeTxId=market_fee_tx_id,
+            SignedMarketFeeTxn=signed_market_fee_txn,
             #
         )
 
@@ -279,8 +279,8 @@ class AtnBid_Maker:
             )
         else:
             d2["QuantityUnit"] = MarketQuantityUnit.default()
-        if "MarketFeeTxId" not in d2.keys():
-            raise SchemaError(f"dict {d2} missing MarketFeeTxId")
+        if "SignedMarketFeeTxn" not in d2.keys():
+            raise SchemaError(f"dict {d2} missing SignedMarketFeeTxn")
         if "TypeName" not in d2.keys():
             raise SchemaError(f"dict {d2} missing TypeName")
 
@@ -292,7 +292,7 @@ class AtnBid_Maker:
             InjectionIsPositive=d2["InjectionIsPositive"],
             PriceUnit=d2["PriceUnit"],
             QuantityUnit=d2["QuantityUnit"],
-            MarketFeeTxId=d2["MarketFeeTxId"],
+            SignedMarketFeeTxn=d2["SignedMarketFeeTxn"],
             TypeName=d2["TypeName"],
             Version="000",
         )
