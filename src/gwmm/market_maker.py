@@ -11,6 +11,7 @@ from typing import List
 
 import dotenv
 import pendulum
+import requests
 
 import gwmm.config as config
 import gwmm.utils as utils
@@ -82,7 +83,8 @@ class MarketMaker(MarketMakerBase):
             for row in reader:
                 rows.append(row)
         start_row = 14
-        start = self.settings.initial_time_unix_s
+        init_t = int(self.settings.initial_time_unix_s)
+        start = (init_t - (init_t % 3600)) + 3600
         for ts_idx in range(1000):
             time = start + ts_idx * 3600
             price = float(rows[start_row + ts_idx][0])

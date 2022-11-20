@@ -5,6 +5,7 @@ from typing import List
 
 import dotenv
 import pendulum
+from aiocache import Cache
 
 import gwmm.config as config
 import gwmm.utils as utils
@@ -20,6 +21,9 @@ from gwmm.schemata import MarketTypeGt_Maker
 from gwmm.schemata import ReceivedBid
 from gwmm.schemata.price_quantity_unitless import PriceQuantityUnitless
 from gwmm.utils import RestfulResponse
+
+
+cache = Cache(Cache.REDIS, endpoint="localhost", port=6379, namespace="main")
 
 
 class MarketMakerApi:
@@ -41,6 +45,15 @@ class MarketMakerApi:
             sample_market_name=sample_market_name,
             sample_market_slot_name=sample_market_slot_name,
         ).tuple
+
+    async def get_count(self) -> int:
+        return await cache.get("count", default=0)
+
+    async def set_count(self, value: int) -> None:
+        await cache.set("count", value)
+
+    async def increment_count(self) -> None:
+        await cache.increment("count", 1)
 
     def check_market_creds(self, payload: AtnBid) -> RestfulResponse:
         """

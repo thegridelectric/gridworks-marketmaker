@@ -595,11 +595,11 @@ class ActorBase(ABC):
         :param pika.frame.Method _unused_frame: The Basic.QosOk response frame
         """
         LOGGER.info("QOS set to: %d", self._prefetch_count)
-        self.additional_rabbit_stuff_after_rabbit_base_setup_is_done()
+        self.additional_start()
         self.start_consuming()
         self.publishing_thread.start()
 
-    def additional_rabbit_stuff_after_rabbit_base_setup_is_done(self) -> None:
+    def additional_start(self) -> None:
         pass
 
     @no_type_check
