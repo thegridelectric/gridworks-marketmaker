@@ -96,6 +96,7 @@ class ActorBase(ABC):
         self.settings: Settings = settings
         self.agent_shutting_down_part_one: bool = False
         self.alias: str = settings.g_node_alias
+        self.g_node_instance_id: str = settings.g_node_instance_id
         self.g_node_role: GNodeRole = GNodeRole(settings.g_node_role_value)
         self.rabbit_role: RabbitRole = RabbitRolebyRole[self.g_node_role]
         self.universe_type: UniverseType = UniverseType(settings.universe_type_value)
@@ -594,11 +595,11 @@ class ActorBase(ABC):
         :param pika.frame.Method _unused_frame: The Basic.QosOk response frame
         """
         LOGGER.info("QOS set to: %d", self._prefetch_count)
-        self.additional_rabbit_stuff_after_rabbit_base_setup_is_done()
+        self.additional_start()
         self.start_consuming()
         self.publishing_thread.start()
 
-    def additional_rabbit_stuff_after_rabbit_base_setup_is_done(self) -> None:
+    def additional_start(self) -> None:
         pass
 
     @no_type_check

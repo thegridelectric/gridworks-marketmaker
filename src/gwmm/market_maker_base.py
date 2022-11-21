@@ -1,6 +1,7 @@
 """ MarketMakerBase """
 import functools
 import logging
+import time
 import traceback
 from abc import abstractmethod
 from datetime import datetime
@@ -8,11 +9,13 @@ from typing import Optional
 from typing import no_type_check
 
 import pendulum
+import requests
 
 from gwmm.actor_base import ActorBase
 from gwmm.config import Settings
 from gwmm.enums import GNodeRole
 from gwmm.enums import MessageCategorySymbol
+from gwmm.enums import UniverseType
 from gwmm.schemata import HeartbeatA
 from gwmm.schemata import HeartbeatA_Maker
 from gwmm.schemata import LatestPrice_Maker
@@ -33,9 +36,23 @@ LOGGER.setLevel(logging.INFO)
 class MarketMakerBase(ActorBase):
     def __init__(self, settings: Settings):
         super().__init__(settings=settings)
-        self.time_s: int = 0
+        self.initialize_time()
 
-    def additional_rabbit_stuff_after_rabbit_base_setup_is_done(self):
+    def initialize_time(self):
+        self._time: float = self.settings.initial_time_unix_s
+        ts = SimTimestep_Maker(
+            from_g_node_alias=self.alias,
+            from_g_node_instance_id="00000000-0000-0000-0000-000000000000",
+            time_unix_s=int(self._time),
+            irl_time_unix_s=int(time.time()),
+            message_id="00000000-0000-0000-0000-000000000000",
+        ).tuple
+        api_endpoint = f"{self.settings.public.mm_api_root}/sim-timestep/"
+        r = requests.post(url=api_endpoint, json=ts.as_dict())
+        if r.status_code > 200:
+            raise Exception("Failed to initialize time with RestAPI. Check uvicorn?")
+
+    def additional_start(self):
         rjb = MessageCategorySymbol.rjb.value
         tc_alias_lrh = self.settings.my_time_coordinator_alias.replace(".", "-")
         binding = f"{rjb}.{tc_alias_lrh}.timecoordinator.sim-timestep"
@@ -44,6 +61,11 @@ class MarketMakerBase(ActorBase):
         self._consume_channel.queue_bind(
             self.queue_name, "timecoordinatormic_tx", routing_key=binding, callback=cb
         )
+
+        self.local_start()
+
+    def local_start(self) -> None:
+        pass
 
     @no_type_check
     def on_timecoordinator_bindok(self, _unused_frame, binding) -> None:
@@ -67,14 +89,14 @@ class MarketMakerBase(ActorBase):
                 LOGGER.warning(traceback.format_exc(True))
 
     def timestep_from_timecoordinator(self, payload: SimTimestep):
-        if self.time_s == 0:
-            self.time_s = payload.TimeUnixS
+        if self._time < payload.TimeUnixS:
+            api_endpoint = f"{self.settings.public.mm_api_root}/sim-timestep/"
+            r = requests.post(url=api_endpoint, json=payload.as_dict())
+            self._time = float(payload.TimeUnixS)
             self.new_timestep(payload)
-            LOGGER.info(f"TIME STARTED: {self.time_utc_str()}")
-        elif self.time_s < payload.TimeUnixS:
-            self.time_s = payload.TimeUnixS
-            self.new_timestep(payload)
-        elif self.time_s == payload.TimeUnixS:
+        elif self._time == float(payload.TimeUnixS):
+            api_endpoint = f"{self.settings.public.mm_api_root}/sim-timestep/"
+            r = requests.post(url=api_endpoint, json=payload.as_dict())
             self.repeated_timestep(payload)
 
     def new_timestep(self, payload: SimTimestep) -> None:
@@ -92,7 +114,11 @@ class MarketMakerBase(ActorBase):
             to_g_node_alias=self.settings.my_super_alias,
         )
 
+    def time(self) -> float:
+        if self.universe_type == UniverseType.Dev:
+            return self._time
+        else:
+            return time.time()
+
     def time_utc_str(self) -> str:
-        if self.time_s is None:
-            return ""
-        return pendulum.from_timestamp(self.time_s).strftime("%m/%d/%Y, %H:%M")
+        return pendulum.from_timestamp(self._time).strftime("%m/%d/%Y, %H:%M")

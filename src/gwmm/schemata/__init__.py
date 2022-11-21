@@ -61,8 +61,6 @@ __all__ = [
     "Ready_Maker",
     "ReceivedBid",
     "ReceivedBid_Maker",
-    "ReceivedBid",
-    "ReceivedBid_Maker",
     "SimTimestep",
     "SimTimestep_Maker",
 ]

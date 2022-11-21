@@ -11,10 +11,12 @@ from typing import List
 
 import dotenv
 import pendulum
+import requests
 
 import gwmm.config as config
 import gwmm.utils as utils
 from gwmm.data_classes.market_type import Rt60Gate30B
+from gwmm.enums import GNodeRole
 from gwmm.enums import MarketPriceUnit
 from gwmm.enums import MarketTypeName
 from gwmm.enums import MessageCategory
@@ -29,7 +31,7 @@ from gwmm.schemata import MarketSlot
 from gwmm.schemata import MarketSlot_Maker
 from gwmm.schemata import MarketTypeGt
 from gwmm.schemata import MarketTypeGt_Maker
-from gwmm.schemata import ReceivedBid
+from gwmm.schemata import Ready_Maker
 from gwmm.schemata import SimTimestep
 from gwmm.schemata.price_quantity_unitless import PriceQuantityUnitless
 from gwmm.utils import RestfulResponse
@@ -58,15 +60,6 @@ class MarketMaker(MarketMakerBase):
         self.market_type_names: List[MarketTypeName] = list(
             map(lambda x: x.Name, self.market_types)
         )
-        sample_market = self.market_types[0]
-        sample_market_name = f"{sample_market.Name}.{self.alias}"
-        sample_market_slot_name = f"{sample_market_name}.1577836800"
-        self.info = MarketMakerInfo_Maker(
-            g_node_alias=self.alias,
-            market_type_list=self.market_types,
-            sample_market_name=sample_market_name,
-            sample_market_slot_name=sample_market_slot_name,
-        ).tuple
 
         self.slot_books: Dict[MarketTypeName, Dict[int, MarketBook]] = {
             self.mm_type.Name: {}
@@ -90,7 +83,8 @@ class MarketMaker(MarketMakerBase):
             for row in reader:
                 rows.append(row)
         start_row = 14
-        start = self.settings.initial_time_unix_s
+        init_t = int(self.settings.initial_time_unix_s)
+        start = (init_t - (init_t % 3600)) + 3600
         for ts_idx in range(1000):
             time = start + ts_idx * 3600
             price = float(rows[start_row + ts_idx][0])
@@ -99,136 +93,90 @@ class MarketMaker(MarketMakerBase):
                 Unit=MarketPriceUnit.USDPerMWh,
             )
 
+    def ready(self) -> None:
+        payload = Ready_Maker(
+            from_g_node_alias=self.alias,
+            from_g_node_instance_id=self.g_node_instance_id,
+        ).tuple
+        self.send_message(
+            payload=payload,
+            to_role=GNodeRole.TimeCoordinator,
+            to_g_node_alias=self.settings.my_time_coordinator_alias,
+        )
+
     def new_timestep(self, payload: SimTimestep) -> None:
         LOGGER.info(f"Got timestep. Time is now {self.time_utc_str()}")
-        if self.time_s in self.slot_books[self.mm_type.Name].keys():
-            book: MarketBook = self.slot_books[self.mm_type.Name][self.time_s]
-            try:
-                self.clear_market(book)
-            except Exception as e:
-                LOGGER.warning(f"failure with mm.clear_market(book): {e}")
-            LOGGER.info("Broadcasting Market Book")
-            self.send_message(
-                payload=book,
-                message_category=MessageCategory.RabbitJsonBroadcast,
-                radio_channel=self.mm_type.Name,
-            )
+        if self._time in self.slot_books[self.mm_type.Name].keys():
+            # get book from redis or other db
+            pass
+            # book: MarketBook = self.slot_books[self.mm_type.Name][self.time_s]
+            # try:
+            #     self.clear_market(book)
+            # except Exception as e:
+            #     LOGGER.warning(f"failure with mm.clear_market(book): {e}")
+            # LOGGER.info("Broadcasting Market Book")
+            # self.send_message(
+            #     payload=book,
+            #     message_category=MessageCategory.RabbitJsonBroadcast,
+            #     radio_channel=self.mm_type.Name,
+            # )
         try:
             self.broadcast_latest_prices()
         except Exception as e:
             LOGGER.warning(
                 f"Failure: mm.broadcast_latest_prices() in new_timestep: {e}"
             )
-        try:
-            self.update_slot_books()
-        except Exception as e:
-            LOGGER.warning("Failure: mm.update_slot_books(): {e}")
+        # try:
+        #     self.update_slot_books()
+        # except Exception as e:
+        #     LOGGER.warning("Failure: mm.update_slot_books(): {e}")
+        self.ready()
 
     def repeated_timestep(self, payload: SimTimestep) -> None:
         LOGGER.info("Received timestep again")
         try:
             self.broadcast_latest_prices()
+            self.ready()
         except Exception as e:
             LOGGER.warning(
                 f"Failure: mm.broadcast_latest_prices() in repeated_timestep: {e}"
             )
 
-    def check_market_creds(self, payload: AtnBid) -> RestfulResponse:
-        """
-        payload.MarketFeeTxId needs to be a transaction id for a payment
-        from the bidder's Algo address to the MarketMaker. Linking the bidder's
-        GNodeInstance to the bidder's Algo address can be checked with a call
-        to the World registry.
-
-        The Market fee has to be sufficient (comparable to gas).
-
-        The transaction has to have happened within a reasonable time (last hour).
-
-        The bidder's Algo address must own a single TaTradingRights, and that
-        must be the current TaTradingRights for the corresponding TerminalAsset.
-
-        Most of this will be tucked into axioms checked by Bid_Maker, which
-        will run for the bid generator as well and hopefully catch a lot of
-        the mistakes before the bid is submitted.
-
-        Args:
-            payload (Bid): _description_
-
-        Returns:
-            RestfulResponse: HttpStatusCode 200 if everything checks out,
-            otherwise 422 with Note explaining why.
-        """
-        tx_id = payload.MarketFeeTxId
-        return RestfulResponse(Note="Has TaTradingRights; paid market fee")
-
-    def atn_bid(self, payload: AtnBid) -> RestfulResponse:
-        ts_ns = int(self.time_s * 10**9)
-        if self.universe_type == UniverseType.Dev:
-            ts_ns += random.uniform(-(10**6), 10**6)
-        rr = self.check_market_creds(payload)
-        if rr.HttpStatusCode > 200:
-            return rr
-        msn = payload.MarketSlotName
-        slot: MarketSlot = utils.market_slot_from_name(msn)
-
-        if slot.Type not in self.market_types:
-            return RestfulResponse(
-                Note=f"MarketType {slot.Type} not served by {self.alias}!",
-                HttpStatusCode=422,
-            )
-        if slot.MarketMakerAlias != self.alias:
-            return RestfulResponse(
-                Note=f"{payload.MarketSlotName} not run by {self.alias}!",
-                HttpStatusCode=422,
-            )
-        if slot.StartUnixS - self.time_s < slot.Type.DurationMinutes * 60:
-            return RestfulResponse(
-                Note=f"Missed gate closing. Bid not accepted",
-                HttpStatusCode=422,
-            )
-        # this should be sharpened by checking that there are no MarketMakers
-        # between the two - but that requires some GNodeTree mechanics in the MarketMaker
-        if not payload.BidderAlias.startswith(self.alias):
-            return RestfulResponse(
-                Note=f"MarketMaker {self.alias} not an ancestor of {payload.BidderAlias}!"
-            )
-        # Move the following into AtnBid_Maker axioms:
-        if payload.PriceUnit != slot.Type.PriceUnit:
-            return RestfulResponse(
-                Note=f"PriceUnit {payload.PriceUnit} must match market type "
-                f"{slot.Type.Name} price_unit {slot.Type.PriceUnit}",
-                HttpStatusCode=422,
-            )
-        if payload.QuantityUnit != slot.Type.QuantityUnit:
-            return RestfulResponse(
-                Note=f"QuantityUnit {payload.QuantityUnit} must match market type "
-                f"{slot.Type} quantity_unit {slot.Type.QuantityUnit}",
-                HttpStatusCode=422,
-            )
-        bid_list = payload.BidList
-        if payload.InjectionIsPositive:
-            demand_bid_list: List[PriceQuantityUnitless] = []
-            for gen_pq in payload.BidList:
-                demand_pq = PriceQuantityUnitless(
-                    PriceTimes1000=gen_pq.PriceTimes1000,
-                    QuantityTimes1000=-gen_pq.QuantityTimes1000,
-                )
-                demand_bid_list.append(demand_pq)
-            bid_list = demand_bid_list
-        rb = ReceivedBid(
-            BidderAlias=payload.BidderAlias, BidList=bid_list, ReceivedTimeUnixNs=ts_ns
-        )
-        self.slot_books[slot.Type.Name][slot.StartUnixS].Bids.append(rb)
-        friendly = pendulum.from_timestamp(ts_ns / 10**9).to_iso8601_string()
-        return RestfulResponse(
-            Note=f"Bid added to MarketBook! Received time {ts_ns} ns ({friendly})"
-        )
-
     def broadcast_latest_prices(self) -> None:
+        market_type = self.market_types[0]
+        start = self.time() - (self.time() % 3600)
+        slot = MarketSlot(
+            Type=market_type, MarketMakerAlias=self.alias, StartUnixS=start
+        )
+        try:
+            mp = self.hack_clearing_price[int(self.time())]
+        except:
+            LOGGER.warning(f"Missing price for {self.time_utc_str()}")
+        payload = LatestPrice_Maker(
+            from_g_node_alias=self.alias,
+            from_g_node_instance_id=self.settings.g_node_instance_id,
+            price_times1000=mp.ValueTimes1000,
+            price_unit=slot.Type.PriceUnit,
+            market_slot_name=utils.name_from_market_slot(slot),
+            message_id=str(uuid.uuid4()),
+            irl_time_utc=pendulum.from_timestamp(time.time()).to_iso8601_string(),
+        ).tuple
+        LOGGER.info(
+            "Broadcasting price: "
+            f"{round(mp.ValueTimes1000 / 1000, 3)}"
+            f" {mp.Unit.value}"
+        )
+        self.send_message(
+            payload=payload,
+            message_category=MessageCategory.RabbitJsonBroadcast,
+            radio_channel=market_type.Name,
+        )
+
+    def real_broadcast_latest_prices(self) -> None:
         for market_type in self.market_types:
             starts: List[int] = list(self.slot_books[market_type.Name].keys())
             if len(starts) > 0:
-                t = self.time_s
+                t = self._time
                 latest_market_start = max(list(filter(lambda x: x <= t, starts)))
                 slot = MarketSlot(
                     Type=market_type,
@@ -303,7 +251,7 @@ class MarketMaker(MarketMakerBase):
 
     def update_slot_books(self):
         for market_type in self.market_types:
-            t = self.time_s
+            t = self._time
             gc_delta = market_type.GateClosingMinutes * 60
             market_delta = market_type.DurationMinutes * 60
             latest = math.floor(t / market_delta)
@@ -330,12 +278,12 @@ class MarketMaker(MarketMakerBase):
         return f"{market_type.Name}.{self.alias}.{self.latest_slot_start(market_type)}"
 
     def latest_slot_start(self, market_type: MarketTypeGt) -> int:
-        t = self.time_s
+        t = self._time
         market_delta = market_type.DurationMinutes * 60
         return math.floor(t / market_delta) * market_delta
 
     def last_slot_start(self, market_type: MarketTypeGt) -> int:
-        if int(self.time_s) == self.latest_slot_start(market_type):
+        if int(self._time) == self.latest_slot_start(market_type):
             return self.latest_slot_start(market_type) - self.market_slot_duration_s(
                 market_type
             )

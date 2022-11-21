@@ -40,7 +40,6 @@ def type_makers() -> List[HeartbeatA_Maker]:
         PriceQuantityUnitless_Maker,
         Ready_Maker,
         ReceivedBid_Maker,
-        ReceivedBid_Maker,
         SimTimestep_Maker,
     ]
 
@@ -70,7 +69,6 @@ def version_by_type_name() -> Dict[str, str]:
         "price.quantity.unitless": "000",
         "ready": "000",
         "received.bid": "000",
-        "received.bid": "000",
         "sim.timestep": "000",
     }
 
@@ -97,7 +95,6 @@ def status_by_versioned_type_name() -> Dict[str, str]:
         "price.quantity.000": "Pending",
         "price.quantity.unitless.000": "Pending",
         "ready.000": "Pending",
-        "received.bid.000": "Pending",
         "received.bid.000": "Pending",
         "sim.timestep.000": "Pending",
     }
