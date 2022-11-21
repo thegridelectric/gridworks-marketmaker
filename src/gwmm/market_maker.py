@@ -105,7 +105,6 @@ class MarketMaker(MarketMakerBase):
         )
 
     def new_timestep(self, payload: SimTimestep) -> None:
-        LOGGER.info(f"Got timestep. Time is now {self.time_utc_str()}")
         if self._time in self.slot_books[self.mm_type.Name].keys():
             # get book from redis or other db
             pass
@@ -162,9 +161,9 @@ class MarketMaker(MarketMakerBase):
             irl_time_utc=pendulum.from_timestamp(time.time()).to_iso8601_string(),
         ).tuple
         LOGGER.info(
-            "Broadcasting price: "
-            f"{round(mp.ValueTimes1000 / 1000, 3)}"
-            f" {mp.Unit.value}"
+            f"[{self.time_str()}: {self.short_alias}] Broadcasting price: "
+            f"${round(mp.ValueTimes1000 / 1000, 3)}/MWh"
+            # f" {mp.Unit.value}"
         )
         self.send_message(
             payload=payload,
@@ -297,3 +296,7 @@ class MarketMaker(MarketMakerBase):
 
     def market_slot_duration_s(self, market_type: MarketTypeGt) -> int:
         return market_type.DurationMinutes * 60
+
+    @property
+    def short_alias(self) -> str:
+        return self.alias.split(".")[-1]

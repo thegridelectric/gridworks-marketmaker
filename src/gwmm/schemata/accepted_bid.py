@@ -1,4 +1,4 @@
-"""Type received.bid, version 000"""
+"""Type accepted.bid, version 000"""
 import json
 from typing import Any
 from typing import Dict
@@ -15,12 +15,17 @@ from gwmm.schemata.price_quantity_unitless import PriceQuantityUnitless
 from gwmm.schemata.price_quantity_unitless import PriceQuantityUnitless_Maker
 
 
-class ReceivedBid(BaseModel):
+class AcceptedBid(BaseModel):
+    MarketSlotName: str  #
     BidderAlias: str  #
     BidList: List[PriceQuantityUnitless]  #
     ReceivedTimeUnixNs: int  #
-    TypeName: Literal["received.bid"] = "received.bid"
+    TypeName: Literal["accepted.bid"] = "accepted.bid"
     Version: str = "000"
+
+    _validator_market_slot_name = predicate_validator(
+        "MarketSlotName", property_format.is_market_slot_name_lrd_format
+    )
 
     _validator_bidder_alias = predicate_validator(
         "BidderAlias", property_format.is_lrd_alias_format
@@ -49,18 +54,20 @@ class ReceivedBid(BaseModel):
         return json.dumps(self.as_dict())
 
 
-class ReceivedBid_Maker:
-    type_name = "received.bid"
+class AcceptedBid_Maker:
+    type_name = "accepted.bid"
     version = "000"
 
     def __init__(
         self,
+        market_slot_name: str,
         bidder_alias: str,
         bid_list: List[PriceQuantityUnitless],
         received_time_unix_ns: int,
     ):
 
-        self.tuple = ReceivedBid(
+        self.tuple = AcceptedBid(
+            MarketSlotName=market_slot_name,
             BidderAlias=bidder_alias,
             BidList=bid_list,
             ReceivedTimeUnixNs=received_time_unix_ns,
@@ -68,11 +75,11 @@ class ReceivedBid_Maker:
         )
 
     @classmethod
-    def tuple_to_type(cls, tuple: ReceivedBid) -> str:
+    def tuple_to_type(cls, tuple: AcceptedBid) -> str:
         return tuple.as_type()
 
     @classmethod
-    def type_to_tuple(cls, t: str) -> ReceivedBid:
+    def type_to_tuple(cls, t: str) -> AcceptedBid:
         try:
             d = json.loads(t)
         except TypeError:
@@ -82,8 +89,10 @@ class ReceivedBid_Maker:
         return cls.dict_to_tuple(d)
 
     @classmethod
-    def dict_to_tuple(cls, d: dict[str, Any]) -> ReceivedBid:
+    def dict_to_tuple(cls, d: dict[str, Any]) -> AcceptedBid:
         d2 = dict(d)
+        if "MarketSlotName" not in d2.keys():
+            raise SchemaError(f"dict {d2} missing MarketSlotName")
         if "BidderAlias" not in d2.keys():
             raise SchemaError(f"dict {d2} missing BidderAlias")
         if "BidList" not in d2.keys():
@@ -104,7 +113,8 @@ class ReceivedBid_Maker:
         if "TypeName" not in d2.keys():
             raise SchemaError(f"dict {d2} missing TypeName")
 
-        return ReceivedBid(
+        return AcceptedBid(
+            MarketSlotName=d2["MarketSlotName"],
             BidderAlias=d2["BidderAlias"],
             BidList=d2["BidList"],
             ReceivedTimeUnixNs=d2["ReceivedTimeUnixNs"],

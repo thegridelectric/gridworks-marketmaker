@@ -276,7 +276,7 @@ class MarketQuantityUnitMap:
 class MarketTypeGt(BaseModel):
     Name: MarketTypeName  #
     DurationMinutes: int  #
-    GateClosingMinutes: int  #
+    GateClosingSeconds: int  #
     PriceUnit: MarketPriceUnit  #
     QuantityUnit: MarketQuantityUnit  #
     CurrencyUnit: RecognizedCurrencyUnit  #
@@ -337,7 +337,7 @@ class MarketTypeGt_Maker:
         self,
         name: MarketTypeName,
         duration_minutes: int,
-        gate_closing_minutes: int,
+        gate_closing_seconds: int,
         price_unit: MarketPriceUnit,
         quantity_unit: MarketQuantityUnit,
         currency_unit: RecognizedCurrencyUnit,
@@ -346,7 +346,7 @@ class MarketTypeGt_Maker:
         self.tuple = MarketTypeGt(
             Name=name,
             DurationMinutes=duration_minutes,
-            GateClosingMinutes=gate_closing_minutes,
+            GateClosingSeconds=gate_closing_seconds,
             PriceUnit=price_unit,
             QuantityUnit=quantity_unit,
             CurrencyUnit=currency_unit,
@@ -378,8 +378,8 @@ class MarketTypeGt_Maker:
             d2["Name"] = MarketTypeName.default()
         if "DurationMinutes" not in d2.keys():
             raise SchemaError(f"dict {d2} missing DurationMinutes")
-        if "GateClosingMinutes" not in d2.keys():
-            raise SchemaError(f"dict {d2} missing GateClosingMinutes")
+        if "GateClosingSeconds" not in d2.keys():
+            raise SchemaError(f"dict {d2} missing GateClosingSeconds")
         if "PriceUnitGtEnumSymbol" not in d2.keys():
             raise SchemaError(f"dict {d2} missing PriceUnitGtEnumSymbol")
         if d2["PriceUnitGtEnumSymbol"] in MarketPriceUnit000SchemaEnum.symbols:
@@ -413,7 +413,7 @@ class MarketTypeGt_Maker:
         return MarketTypeGt(
             Name=d2["Name"],
             DurationMinutes=d2["DurationMinutes"],
-            GateClosingMinutes=d2["GateClosingMinutes"],
+            GateClosingSeconds=d2["GateClosingSeconds"],
             PriceUnit=d2["PriceUnit"],
             QuantityUnit=d2["QuantityUnit"],
             CurrencyUnit=d2["CurrencyUnit"],
@@ -429,7 +429,7 @@ class MarketTypeGt_Maker:
             dc = MarketType(
                 name=t.Name,
                 duration_minutes=t.DurationMinutes,
-                gate_closing_minutes=t.GateClosingMinutes,
+                gate_closing_seconds=t.GateClosingSeconds,
                 price_unit=t.PriceUnit,
                 quantity_unit=t.QuantityUnit,
                 currency_unit=t.CurrencyUnit,
@@ -442,7 +442,7 @@ class MarketTypeGt_Maker:
         t = MarketTypeGt_Maker(
             name=dc.name,
             duration_minutes=dc.duration_minutes,
-            gate_closing_minutes=dc.gate_closing_minutes,
+            gate_closing_seconds=dc.gate_closing_seconds,
             price_unit=dc.price_unit,
             quantity_unit=dc.quantity_unit,
             currency_unit=dc.currency_unit,

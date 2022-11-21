@@ -8,7 +8,10 @@ WORKDIR /app
 
 COPY ./src /app/src
 COPY ./for_docker/docker.env /app/.env
+COPY ./for_docker/keep_running.py /app/keep_running.py
 COPY README.md /app/README.md
 COPY ./input_data/dev_prices.csv /app/input_data/dev_prices.csv
 RUN pip install -e /app
-CMD ["uvicorn", "gwmm.rest_api:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+#CMD ["uvicorn", "gwmm.rest_api:app", "--host", "localhost",  "--port", "8000", "--workers", "5"]
+# CMD ["uvicorn", "gwmm.rest_api:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["python", "keep_running.py"]

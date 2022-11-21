@@ -3,6 +3,7 @@ from typing import Dict
 from typing import List
 from typing import no_type_check
 
+from gwmm.schemata import AcceptedBid_Maker
 from gwmm.schemata import AtnBid_Maker
 from gwmm.schemata import BidAck_Maker
 from gwmm.schemata import GnodeGt_Maker
@@ -16,7 +17,6 @@ from gwmm.schemata import MarketTypeGt_Maker
 from gwmm.schemata import PriceQuantity_Maker
 from gwmm.schemata import PriceQuantityUnitless_Maker
 from gwmm.schemata import Ready_Maker
-from gwmm.schemata import ReceivedBid_Maker
 from gwmm.schemata import SimTimestep_Maker
 
 
@@ -26,6 +26,7 @@ TypeMakerByName: Dict[str, HeartbeatA_Maker] = {}
 @no_type_check
 def type_makers() -> List[HeartbeatA_Maker]:
     return [
+        AcceptedBid_Maker,
         AtnBid_Maker,
         BidAck_Maker,
         GnodeGt_Maker,
@@ -39,7 +40,6 @@ def type_makers() -> List[HeartbeatA_Maker]:
         PriceQuantity_Maker,
         PriceQuantityUnitless_Maker,
         Ready_Maker,
-        ReceivedBid_Maker,
         SimTimestep_Maker,
     ]
 
@@ -55,6 +55,7 @@ def version_by_type_name() -> Dict[str, str]:
     """
 
     v: Dict[str, str] = {
+        "accepted.bid": "000",
         "atn.bid": "000",
         "bid.ack": "000",
         "gnode.gt": "000",
@@ -68,7 +69,6 @@ def version_by_type_name() -> Dict[str, str]:
         "price.quantity": "000",
         "price.quantity.unitless": "000",
         "ready": "000",
-        "received.bid": "000",
         "sim.timestep": "000",
     }
 
@@ -82,6 +82,7 @@ def status_by_versioned_type_name() -> Dict[str, str]:
     """
 
     v: Dict[str, str] = {
+        "accepted.bid.000": "Pending",
         "atn.bid.000": "Pending",
         "bid.ack.000": "Pending",
         "gnode.gt.000": "Pending",
@@ -95,7 +96,6 @@ def status_by_versioned_type_name() -> Dict[str, str]:
         "price.quantity.000": "Pending",
         "price.quantity.unitless.000": "Pending",
         "ready.000": "Pending",
-        "received.bid.000": "Pending",
         "sim.timestep.000": "Pending",
     }
 

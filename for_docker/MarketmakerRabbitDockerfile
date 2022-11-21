@@ -1,0 +1,15 @@
+
+ARG BASE=jessmillar/mm-base:latest
+
+FROM $BASE AS app-base
+
+
+WORKDIR /app
+
+COPY ./src /app/src
+COPY ./for_docker/docker.env /app/.env
+COPY ./for_docker/run_mm_rabbit.py /app/main.py
+COPY README.md /app/README.md
+COPY ./input_data/dev_prices.csv /app/input_data/dev_prices.csv
+RUN pip install -e /app
+CMD ["python", "main.py"]

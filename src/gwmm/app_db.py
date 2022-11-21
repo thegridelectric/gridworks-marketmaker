@@ -1,9 +1,15 @@
 # app_db.py
+import dotenv
 from fastapi import FastAPI
 from fastapi import status
 from tortoise import Model
 from tortoise import fields
 from tortoise.contrib.fastapi import register_tortoise
+
+import gwmm.config as config
+
+
+settings: config.Settings = config.Settings(_env_file=dotenv.find_dotenv())
 
 
 class SimTimeModel(Model):
@@ -39,7 +45,7 @@ async def reset():
 
 register_tortoise(
     app,
-    db_url="postgres://test_user:test_pass@localhost:5432/test_db",  # Don't expose login/pass in src, use environment variables
+    db_url=f"postgres://test_user:test_pass@{settings.public.mmdb_endpoint}:5432/test_db",  # Don't expose login/pass in src, use environment variables
     modules={"models": ["app_db"]},
     generate_schemas=True,
     add_exception_handlers=True,

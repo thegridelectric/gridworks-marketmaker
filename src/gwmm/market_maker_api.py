@@ -1,29 +1,29 @@
 import csv
 import random
+import time
+import uuid
 from typing import Dict
 from typing import List
 
 import dotenv
+import paho.mqtt.client as mqtt
 import pendulum
-from aiocache import Cache
 
 import gwmm.config as config
 import gwmm.utils as utils
 from gwmm.data_classes.market_type import Rt60Gate30B
 from gwmm.enums import MarketPriceUnit
 from gwmm.enums import UniverseType
+from gwmm.schemata import AcceptedBid
+from gwmm.schemata import AcceptedBid_Maker
 from gwmm.schemata import AtnBid
 from gwmm.schemata import MarketMakerInfo_Maker
 from gwmm.schemata import MarketPrice
 from gwmm.schemata import MarketSlot
 from gwmm.schemata import MarketTypeGt
 from gwmm.schemata import MarketTypeGt_Maker
-from gwmm.schemata import ReceivedBid
 from gwmm.schemata.price_quantity_unitless import PriceQuantityUnitless
 from gwmm.utils import RestfulResponse
-
-
-cache = Cache(Cache.REDIS, endpoint="localhost", port=6379, namespace="main")
 
 
 class MarketMakerApi:
@@ -32,6 +32,7 @@ class MarketMakerApi:
         settings: config.Settings = config.Settings(_env_file=dotenv.find_dotenv()),
     ):
         self.settings = settings
+
         self.alias = settings.g_node_alias
         self.universe_type = UniverseType(self.settings.universe_type_value)
         self.mm_type: MarketTypeGt = MarketTypeGt_Maker.dc_to_tuple(Rt60Gate30B)
@@ -45,15 +46,12 @@ class MarketMakerApi:
             sample_market_name=sample_market_name,
             sample_market_slot_name=sample_market_slot_name,
         ).tuple
-
-    async def get_count(self) -> int:
-        return await cache.get("count", default=0)
-
-    async def set_count(self, value: int) -> None:
-        await cache.set("count", value)
-
-    async def increment_count(self) -> None:
-        await cache.increment("count", 1)
+        self.mqtt_client_id = "-".join(str(uuid.uuid4()).split("-")[:-1])
+        self.mqtt_client = mqtt.Client(self.mqtt_client_id)
+        self.mqtt_client.username_pw_set(
+            username=self.settings.rabbit.username,
+            password=self.settings.rabbit.password.get_secret_value(),
+        )
 
     def check_market_creds(self, payload: AtnBid) -> RestfulResponse:
         """
@@ -83,10 +81,8 @@ class MarketMakerApi:
         txn = payload.SignedMarketFeeTxn
         return RestfulResponse(Note="Has TaTradingRights; paid market fee")
 
-    def atn_bid(self, payload: AtnBid) -> RestfulResponse:
-        ts_ns = int(self.time() * 10**9)
-        if self.universe_type == UniverseType.Dev:
-            ts_ns += random.uniform(-(10**6), 10**6)
+    def atn_bid(self, payload: AtnBid, ts_ns: int) -> RestfulResponse:
+        ts = ts_ns * 10**-9
         rr = self.check_market_creds(payload)
         if rr.HttpStatusCode > 200:
             return rr
@@ -103,11 +99,19 @@ class MarketMakerApi:
                 Note=f"{payload.MarketSlotName} not run by {self.alias}!",
                 HttpStatusCode=422,
             )
-        if slot.StartUnixS - self.time() < slot.Type.DurationMinutes * 60:
+        gate_closing = slot.StartUnixS - slot.Type.GateClosingSeconds
+        ts_str = pendulum.from_timestamp(ts).to_iso8601_string()
+        gc_str = pendulum.from_timestamp(gate_closing).to_iso8601_string()
+        if gate_closing < ts:
+            note = (
+                f"Missed gate closing: Received time {ts_str}, Gate closing {gc_str}"
+                "Contract not accepted"
+            )
             return RestfulResponse(
-                Note=f"Missed gate closing. Bid not accepted",
+                Note=note,
                 HttpStatusCode=422,
             )
+
         # this should be sharpened by checking that there are no MarketMakers
         # between the two - but that requires some GNodeTree mechanics in the MarketMaker
         if not payload.BidderAlias.startswith(self.alias):
@@ -124,7 +128,7 @@ class MarketMakerApi:
         if payload.QuantityUnit != slot.Type.QuantityUnit:
             return RestfulResponse(
                 Note=f"QuantityUnit {payload.QuantityUnit} must match market type "
-                f"{slot.Type} quantity_unit {slot.Type.QuantityUnit}",
+                f"{slot.Type.Name} quantity_unit {slot.Type.QuantityUnit}",
                 HttpStatusCode=422,
             )
         bid_list = payload.BidList
@@ -137,14 +141,29 @@ class MarketMakerApi:
                 )
                 demand_bid_list.append(demand_pq)
             bid_list = demand_bid_list
-        rb = ReceivedBid(
-            BidderAlias=payload.BidderAlias, BidList=bid_list, ReceivedTimeUnixNs=ts_ns
+        accepted_bid = AcceptedBid(
+            MarketSlotName=payload.MarketSlotName,
+            BidderAlias=payload.BidderAlias,
+            BidList=bid_list,
+            ReceivedTimeUnixNs=ts_ns,
         )
         # TODO: put slot books in database and/or redis
         # self.slot_books[slot.Type.Name][slot.StartUnixS].Bids.append(rb)
-        friendly = pendulum.from_timestamp(ts_ns / 10**9).to_iso8601_string()
+        ts_str = pendulum.from_timestamp(ts).to_iso8601_string()
+        gc_str = pendulum.from_timestamp(gate_closing).to_iso8601_string()
+        # self.mqtt_client.connect(self.settings.rabbit.host, port=self.settings.rabbit.mqtt_port)
+        # self.mqtt_client.loop_start()
+        # time.sleep(2)
+        # lrh_alias = self.alias.replace(".","-")
+        # lrh_type_name = AcceptedBid_Maker.type_name.replace(".","-")
+        # topic = f"mq/{lrh_alias}/{lrh_type_name}"
+        # self.mqtt_client.publish(topic, accepted_bid.as_type())
+        # self.mqtt_client.disconnect()
+        # self.mqtt_client.loop_stop()
         return RestfulResponse(
-            Note=f"Bid added to MarketBook! Received time {ts_ns} ns ({friendly})"
+            Note=f"Contract live. Received time {ts_str}, Gate closing {gc_str}",
+            PayloadTypeName="accepted.bid",
+            PayloadAsDict=accepted_bid.dict(),
         )
 
     def time(self):

@@ -1,9 +1,14 @@
 version: "3.5"
 
+networks:
+  dev:
+
 services:
   rabbit:
     container_name: dev-rabbit
     image: "jessmillar/dev-rabbit-arm:chaos__fe79cee__20221119"
+    networks:
+      - "dev"
     ports:
       - 1885:1885
       - 4369:4369
@@ -17,3 +22,23 @@ services:
       - RABBITMQ_PLUGINS=rabbitmq_management,rabbitmq_stomp,rabbitmq_web_stomp,rabbitmq_mqtt
     volumes:
       - ./for_docker/dev_rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+  database:
+    hostname: database
+    container_name: mm-db
+    networks:
+      - "dev"
+    image: postgres:12-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: test_pass
+      POSTGRES_USER: test_user
+      POSTGRES_DB: test_db
+  redis:
+    hostname: redis
+    container_name: mm-redis
+    networks:
+      - "dev"
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
