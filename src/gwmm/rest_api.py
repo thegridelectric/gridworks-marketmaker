@@ -1,7 +1,10 @@
+import random
+import time
 from functools import lru_cache
 from typing import Dict
 from typing import List
 
+import dotenv
 import pendulum
 
 # app_cache.py
@@ -14,16 +17,25 @@ from pydantic import BaseModel
 from pydantic import ValidationError
 
 import gwmm.config as config
-from gwmm.api_utils import MarketMakerApi
+from gwmm.enums import UniverseType
 from gwmm.market_maker import MarketMaker
+from gwmm.market_maker_api import MarketMakerApi
 from gwmm.schemata import AtnBid
+from gwmm.schemata import AtnBid_Maker
 from gwmm.schemata import MarketMakerInfo
 from gwmm.schemata import SimTimestep
 from gwmm.utils import RestfulResponse
 
 
+settings: config.Settings = config.Settings(_env_file=dotenv.find_dotenv())
+
 app = FastAPI()
-cache = Cache(Cache.REDIS, endpoint="localhost", port=6379, namespace="main")
+cache = Cache(
+    Cache.REDIS,
+    endpoint=f"{settings.public.redis_endpoint}",
+    port=6379,
+    namespace="main",
+)
 
 
 class SimTime:
@@ -53,10 +65,13 @@ async def main():
     return mm.info
 
 
-@app.get("/time/")
-async def time():
-    time = await sim_time.get_time()
-    return {"TimeUnixS": time, "UTC": pendulum.from_timestamp(time).to_iso8601_string()}
+@app.get("/get-time/")
+async def get_time():
+    time_s = await get_time()
+    return {
+        "TimeUnixS": time_s,
+        "UTC": pendulum.from_timestamp(time_s).to_iso8601_string(),
+    }
 
 
 @app.post(f"/sim-timestep/")
@@ -67,11 +82,30 @@ async def set_time(timestep: SimTimestep):
 
 @app.post("/atn-bid/", response_model=RestfulResponse)
 async def atn_bid_received(
-    payload: AtnBid,
+    d: Dict,
 ):
-    r = mm.atn_bid(payload=payload)
-    if r.HttpStatusCode > 200:
+    try:
+        payload = AtnBid_Maker.dict_to_tuple(d)
+    except ValidationError as e:
+        raise HTTPException(status_code=422, detail=f"{e}")
+    time_received = await get_time()
+
+    # HACK for timesteps that are not subsecond:
+    time_received -= 120
+
+    ts_ns = int(time_received * 10**9)
+    if mm.universe_type == UniverseType.Dev:
+        ts_ns += random.uniform(-(10**8), 10**8)
+    rr = mm.atn_bid(payload=payload, ts_ns=ts_ns)
+    if rr.HttpStatusCode > 200:
         raise HTTPException(
-            status_code=r.HttpStatusCode, detail=f"[{r.HttpStatusCode}]: {r.Note}"
+            status_code=rr.HttpStatusCode, detail=f"[{rr.HttpStatusCode}]: {rr.Note}"
         )
-    return r
+    return rr
+
+
+async def get_time() -> float:
+    if mm.universe_type == UniverseType.Dev:
+        time_s = await sim_time.get_time()
+        return float(time_s)
+    return time.time()

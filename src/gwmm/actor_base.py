@@ -175,7 +175,7 @@ class ActorBase(ABC):
         :param bytes body: The message body
         """
         self.latest_routing_key = basic_deliver.routing_key
-        LOGGER.warning(
+        LOGGER.debug(
             f"In actor_base on_message. Got {basic_deliver.routing_key} with delivery tag {basic_deliver.delivery_tag}"
         )
         self.acknowledge_message(basic_deliver.delivery_tag)
@@ -322,7 +322,7 @@ class ActorBase(ABC):
                 body=payload.as_type(),
                 properties=properties,
             )
-            LOGGER.info(f" [x] Sent {payload.TypeName} w routing key {routing_key}")
+            LOGGER.debug(f" [x] Sent {payload.TypeName} w routing key {routing_key}")
             return OnSendMessageDiagnostic.MESSAGE_SENT
 
         except BaseException as err:
@@ -926,7 +926,7 @@ class ActorBase(ABC):
         type_name_lrh = payload.TypeName.replace(".", "-")
 
         direct_routing_key = f"{msg_type}.{from_lrh_alias}.{from_role}.{type_name_lrh}.{to_role_val}.{to_lrh_alias}"
-        LOGGER.warning(direct_routing_key)
+        LOGGER.debug(direct_routing_key)
         return direct_routing_key
 
     def type_name_from_routing_key(

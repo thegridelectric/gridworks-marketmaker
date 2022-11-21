@@ -19,6 +19,8 @@ class MarketPublic(BaseModel):
     gnr_api_root: str = "http://localhost:7999"
     world_api_root: str = "http://localhost:7998"
     mm_api_root: str = "http://localhost:7997"
+    redis_endpoint: str = "localhost"
+    mmdb_endpoint: str = "localhost"
 
 
 class AlgoApiSecrets(BaseModel):
@@ -40,6 +42,10 @@ class RabbitBrokerClient(BaseModel):
     """Settings for connecting to a Rabbit Broker"""
 
     url: SecretStr = SecretStr("amqp://smqPublic:smqPublic@localhost:5672/d1__1")
+    host: str = "localhost"
+    username: str = "smqPublic"
+    password: SecretStr = SecretStr("smqPublic")
+    mqtt_port: int = 1885
 
 
 class Settings(BaseSettings):

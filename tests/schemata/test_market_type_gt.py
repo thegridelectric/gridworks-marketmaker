@@ -17,7 +17,7 @@ def test_market_type_gt_generated() -> None:
     d = {
         "NameGtEnumSymbol": "618f9c0a",
         "DurationMinutes": 60,
-        "GateClosingMinutes": 30,
+        "GateClosingSeconds": 60,
         "PriceUnitGtEnumSymbol": "00000000",
         "QuantityUnitGtEnumSymbol": "c272f3b3",
         "CurrencyUnitGtEnumSymbol": "e57c5143",
@@ -42,7 +42,7 @@ def test_market_type_gt_generated() -> None:
     t = Maker(
         name=gtuple.Name,
         duration_minutes=gtuple.DurationMinutes,
-        gate_closing_minutes=gtuple.GateClosingMinutes,
+        gate_closing_seconds=gtuple.GateClosingSeconds,
         price_unit=gtuple.PriceUnit,
         quantity_unit=gtuple.QuantityUnit,
         currency_unit=gtuple.CurrencyUnit,
@@ -77,7 +77,7 @@ def test_market_type_gt_generated() -> None:
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d)
-    del d2["GateClosingMinutes"]
+    del d2["GateClosingSeconds"]
     with pytest.raises(SchemaError):
         Maker.dict_to_tuple(d2)
 
@@ -107,7 +107,7 @@ def test_market_type_gt_generated() -> None:
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
 
-    d2 = dict(d, GateClosingMinutes="30.1")
+    d2 = dict(d, GateClosingSeconds="60.1")
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
 

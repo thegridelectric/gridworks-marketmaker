@@ -9,23 +9,23 @@ from pydantic import BaseModel
 from pydantic import validator
 
 from gwmm.errors import SchemaError
+from gwmm.schemata.accepted_bid import AcceptedBid
+from gwmm.schemata.accepted_bid import AcceptedBid_Maker
 from gwmm.schemata.market_slot import MarketSlot
 from gwmm.schemata.market_slot import MarketSlot_Maker
-from gwmm.schemata.received_bid import ReceivedBid
-from gwmm.schemata.received_bid import ReceivedBid_Maker
 
 
 class MarketBook(BaseModel):
     Slot: MarketSlot  #
-    Bids: List[ReceivedBid]  #
+    Bids: List[AcceptedBid]  #
     TypeName: Literal["market.book"] = "market.book"
     Version: str = "000"
 
     @validator("Bids")
     def _validator_bids(cls, v: List) -> List:
         for elt in v:
-            if not isinstance(elt, ReceivedBid):
-                raise ValueError(f"elt {elt} of Bids must have type ReceivedBid.")
+            if not isinstance(elt, AcceptedBid):
+                raise ValueError(f"elt {elt} of Bids must have type AcceptedBid.")
         return v
 
     def as_dict(self) -> Dict[str, Any]:
@@ -47,7 +47,7 @@ class MarketBook_Maker:
     type_name = "market.book"
     version = "000"
 
-    def __init__(self, slot: MarketSlot, bids: List[ReceivedBid]):
+    def __init__(self, slot: MarketSlot, bids: List[AcceptedBid]):
 
         self.tuple = MarketBook(
             Slot=slot,
@@ -86,9 +86,9 @@ class MarketBook_Maker:
         for elt in d2["Bids"]:
             if not isinstance(elt, dict):
                 raise SchemaError(
-                    f"elt {elt} of Bids must be " "ReceivedBid but not even a dict!"
+                    f"elt {elt} of Bids must be " "AcceptedBid but not even a dict!"
                 )
-            bids.append(ReceivedBid_Maker.dict_to_tuple(elt))
+            bids.append(AcceptedBid_Maker.dict_to_tuple(elt))
         d2["Bids"] = bids
         if "TypeName" not in d2.keys():
             raise SchemaError(f"dict {d2} missing TypeName")

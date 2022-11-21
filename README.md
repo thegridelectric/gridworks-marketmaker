@@ -2,15 +2,49 @@
 
 ## QuickStart
 
-```
-docker-compose -f docker-x86.yml up -d
-```
+1. Clone this repo
+
+2. Using python 3.10.\* or greater, create virtual env inside this repo
+
+   ```
+   python -m venv venv
+   source venv/bin/activate
+   pip install -e .
+   ```
+
+3. Install [docker](https://docs.docker.com/get-docker/)
+
+4. Start docker containers
+
+- **X86 CPU**:
+
+  ```
+  docker compose -f docker-x86.yml up -d
+  ```
+
+- **arm CPU**:
+
+  ```
+  docker compose -f docker-arm.yml up -d
+  ```
+
+5. Start the API for the MarketMaker
 
 ```
 uvicorn gwmm.rest_api:app --host localhost --port 7997 --workers 5
 ```
 
-- TODO
+    - http://localhost:7997/ shows market maker information
+    - http://localhost:7997/get-time/ shows the current time of the simulation
+
+6. Run the rabbit-half of the MarketMaker:
+
+```
+python demo.py
+```
+
+NOTE: This requires a TimeCoordinator and at least one AtomicTNode in order
+for time to move forward.
 
 ## Requirements
 

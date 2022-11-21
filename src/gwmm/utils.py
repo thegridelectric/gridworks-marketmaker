@@ -110,12 +110,12 @@ def market_slot_from_name(market_slot_name: str) -> MarketSlot:
             f"market slot alias {market_slot_name} does not have market"
             " slot alias lrd format!"
         )
-    words = market_slot_name.split["."]
+    words = market_slot_name.split(".")
     market_type_name = words[0]
     market_type_dc = MarketType.by_id[market_type_name]
     market_type = MarketTypeGt_Maker.dc_to_tuple(market_type_dc)
-    market_maker_alias = words[1]
-    slot_start = int(words[2])
+    market_maker_alias = ".".join(words[1:-1])
+    slot_start = int(words[-1])
     return MarketSlot(
         Type=market_type, MarketMakerAlias=market_maker_alias, StartUnixS=slot_start
     )

@@ -1,5 +1,7 @@
 """ List of all the schema types """
 
+from gwmm.schemata.accepted_bid import AcceptedBid
+from gwmm.schemata.accepted_bid import AcceptedBid_Maker
 from gwmm.schemata.atn_bid import AtnBid
 from gwmm.schemata.atn_bid import AtnBid_Maker
 from gwmm.schemata.bid_ack import BidAck
@@ -26,13 +28,13 @@ from gwmm.schemata.price_quantity_unitless import PriceQuantityUnitless
 from gwmm.schemata.price_quantity_unitless import PriceQuantityUnitless_Maker
 from gwmm.schemata.ready import Ready
 from gwmm.schemata.ready import Ready_Maker
-from gwmm.schemata.received_bid import ReceivedBid
-from gwmm.schemata.received_bid import ReceivedBid_Maker
 from gwmm.schemata.sim_timestep import SimTimestep
 from gwmm.schemata.sim_timestep import SimTimestep_Maker
 
 
 __all__ = [
+    "AcceptedBid",
+    "AcceptedBid_Maker",
     "AtnBid",
     "AtnBid_Maker",
     "BidAck",
@@ -59,8 +61,6 @@ __all__ = [
     "PriceQuantityUnitless_Maker",
     "Ready",
     "Ready_Maker",
-    "ReceivedBid",
-    "ReceivedBid_Maker",
     "SimTimestep",
     "SimTimestep_Maker",
 ]
