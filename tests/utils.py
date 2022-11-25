@@ -122,7 +122,7 @@ class MarketMakerStubRecorder(MarketMakerBase):
             to_g_node_alias="d1.super3",
         )
 
-    def bid_from_rabbit(payload: Bid, from_alias: str):
+    def bid_from_rabbit(payload: AtnBid, from_alias: str):
         pass
 
     def prepare_for_death(self):
