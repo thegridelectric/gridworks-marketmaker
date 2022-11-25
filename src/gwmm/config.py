@@ -13,12 +13,15 @@ class MarketPublic(BaseModel):
     """This class is the publicly available information about the GNodeFactory"""
 
     algod_address: str = "http://localhost:4001"
+    kmd_address: str = "http://localhost:4002"
+    gen_kmd_wallet_name: str = "unencrypted-default-wallet"
     universe: str = "dev"
     gnf_admin_addr: str = "RNMHG32VTIHTC7W3LZOEPTDGREL5IQGK46HKD3KBLZHYQUCAKLMT4G5ALI"
     gnf_api_root: str = "http://localhost:8000"
     gnr_api_root: str = "http://localhost:7999"
     world_api_root: str = "http://localhost:7998"
     mm_api_root: str = "http://localhost:7997"
+    mm_addr: str = "JMEUH2AXM6UGRJO2DBZXDOA2OMIWQFNQZ54LCVC4GQX6QDOX5Z6JRGMWFA"
     redis_endpoint: str = "localhost"
     mmdb_endpoint: str = "localhost"
 
@@ -52,6 +55,9 @@ class Settings(BaseSettings):
     g_node_alias: str = "d1.isone.ver.keene"
     g_node_id: str = "5ac8c31d-bf46-4f81-a5f2-6b3d20810435"
     g_node_instance_id: str = "d3c217af-d51f-44fb-adb1-932760e9cf12"
+    sk: SecretStr = SecretStr(
+        "jYrUtgOKhMCeNsXyHDrz3I2a9pMLTmdq1wjHdPfMW8VLCUPoF2eoaKXaGHNxuBpzEWgVsM94sVRcNC/oDdfufA=="
+    )
     g_node_role_value: str = "MarketMaker"
     my_super_alias: str = "d1.super3"
     my_time_coordinator_alias = "d1.time"

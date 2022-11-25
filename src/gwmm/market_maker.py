@@ -13,8 +13,10 @@ import dotenv
 import pendulum
 import requests
 
+import gwmm.algo_utils as algo_utils
 import gwmm.config as config
 import gwmm.utils as utils
+from gwmm.algo_utils import BasicAccount
 from gwmm.data_classes.market_type import Rt60Gate30B
 from gwmm.enums import GNodeRole
 from gwmm.enums import MarketPriceUnit
@@ -54,6 +56,8 @@ class MarketMaker(MarketMakerBase):
 
         super().__init__(settings=settings)
         self.universe_type = UniverseType(self.settings.universe_type_value)
+        self.acct: BasicAccount = BasicAccount(self.settings.sk.get_secret_value())
+        self.check_funding()
         self.mm_type: MarketTypeGt = MarketTypeGt_Maker.dc_to_tuple(Rt60Gate30B)
         self.market_types: List[MarketTypeGt] = [self.mm_type]
 
@@ -72,6 +76,10 @@ class MarketMaker(MarketMakerBase):
         self.hack_clearing_price: Dict[int, MarketPrice] = {}
         self.initialize_hack_clearing_price()
         LOGGER.info("MarketMaker initialized")
+
+    def check_funding(self):
+        if algo_utils.algos(self.acct.addr) < 0.5:
+            raise Exception(f"MarketMaker must be funded!")
 
     def initialize_hack_clearing_price(self) -> Dict[int, MarketPrice]:
         file = "input_data/dev_prices.csv"

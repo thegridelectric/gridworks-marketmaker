@@ -74,10 +74,10 @@ async def get_time():
     }
 
 
-@app.post(f"/sim-timestep/")
+@app.post(f"/sim-timestep/", response_model=RestfulResponse)
 async def set_time(timestep: SimTimestep):
     await sim_time.set_time(timestep.TimeUnixS)
-    return status.HTTP_200_OK
+    return RestfulResponse(Note=f"Successfully updated time to {timestep.TimeUnixS}")
 
 
 @app.post("/atn-bid/", response_model=RestfulResponse)
