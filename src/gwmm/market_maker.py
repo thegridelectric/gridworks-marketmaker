@@ -176,7 +176,7 @@ class MarketMaker(MarketMakerBase):
         self.send_message(
             payload=payload,
             message_category=MessageCategory.RabbitJsonBroadcast,
-            radio_channel=market_type.Name,
+            radio_channel=market_type.Name.value,
         )
 
     def real_broadcast_latest_prices(self) -> None:
