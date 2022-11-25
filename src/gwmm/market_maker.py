@@ -57,7 +57,7 @@ class MarketMaker(MarketMakerBase):
         super().__init__(settings=settings)
         self.universe_type = UniverseType(self.settings.universe_type_value)
         self.acct: BasicAccount = BasicAccount(self.settings.sk.get_secret_value())
-        self.check_funding()
+        # self.check_funding()
         self.mm_type: MarketTypeGt = MarketTypeGt_Maker.dc_to_tuple(Rt60Gate30B)
         self.market_types: List[MarketTypeGt] = [self.mm_type]
 
