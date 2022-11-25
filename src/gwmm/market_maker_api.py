@@ -37,9 +37,11 @@ class MarketMakerApi:
         self.universe_type = UniverseType(self.settings.universe_type_value)
         self.mm_type: MarketTypeGt = MarketTypeGt_Maker.dc_to_tuple(Rt60Gate30B)
         self.market_types: List[MarketTypeGt] = [self.mm_type]
-        sample_market = self.market_types[0]
-        sample_market_name = f"{sample_market.Name}.{self.alias}"
-        sample_market_slot_name = f"{sample_market_name}.1577836800"
+        # sample_market = self.market_types[0]
+        # sample_market_name = f"{sample_market.Name}.{self.alias}"
+        # sample_market_slot_name = f"{sample_market_name}.1577836800"
+        sample_market_name = 'rt60gate30b.d1.isone.ver.keene'
+        sample_market_slot_name = 'rt60gate30b.d1.isone.ver.keene.1577836800'
         self.info = MarketMakerInfo_Maker(
             g_node_alias=self.alias,
             market_type_list=self.market_types,
