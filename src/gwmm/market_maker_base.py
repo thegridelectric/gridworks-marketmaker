@@ -44,7 +44,7 @@ class MarketMakerBase(ActorBase):
             from_g_node_alias=self.alias,
             from_g_node_instance_id="00000000-0000-0000-0000-000000000000",
             time_unix_s=int(self._time),
-            irl_time_unix_ms=int(time.time() * 1000),
+            timestep_created_ms=int(time.time() * 1000),
             message_id="00000000-0000-0000-0000-000000000000",
         ).tuple
         api_endpoint = f"{self.settings.public.mm_api_root}/sim-timestep/"

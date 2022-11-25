@@ -3,9 +3,24 @@ networks:
   dev:
 
 services:
+  # marketmaker:
+  #   container_name: mm
+  #   image: "jessmillar/marketmaker:latest"
+  #   networks:
+  #     - "dev"
+  #   ports:
+  #     - 7997:8000
+  redis:
+    hostname: redis
+    container_name: mm-redis
+    image: redis:6-alpine
+    networks:
+      - "dev"
+    ports:
+      - "6379:6379"
   rabbit:
     container_name: mm-dev-rabbit
-    image: "jessmillar/dev-rabbit-x86:chaos__fe79cee__20221119"
+    image: "jessmillar/dev-rabbit-x86:chaos__f13d33c__20221121"
     networks:
       - "dev"
     ports:
@@ -23,30 +38,3 @@ services:
       - RABBITMQ_PLUGINS=rabbitmq_management,rabbitmq_stomp,rabbitmq_web_stomp,rabbitmq_mqtt
     volumes:
       - ./for_docker/dev_rabbitmq.conf:/opt/bitnami/rabbitmq/etc/rabbitmq/rabbitmq.conf:ro
-  # market-maker:
-  #   container_name: mm
-  #   networks:
-  #     - "dev"
-  #   image: "jessmillar/marketmaker:latest"
-  #   ports:
-  #     - 7997:8000
-  database:
-    hostname: database
-    container_name: mm-db
-    networks:
-      - "dev"
-    image: postgres:12-alpine
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_PASSWORD: test_pass
-      POSTGRES_USER: test_user
-      POSTGRES_DB: test_db
-  redis:
-    hostname: redis
-    container_name: mm-redis
-    networks:
-      - "dev"
-    image: redis:6-alpine
-    ports:
-      - "6379:6379"
