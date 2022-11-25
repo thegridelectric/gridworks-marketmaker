@@ -100,7 +100,7 @@ def message_category_from_symbol(symbol: MessageCategorySymbol) -> MessageCatego
 
 
 def name_from_market_slot(slot: MarketSlot) -> str:
-    return f"{slot.Type.Name}.{slot.MarketMakerAlias}.{slot.StartUnixS}"
+    return f"{slot.Type.Name.value}.{slot.MarketMakerAlias}.{slot.StartUnixS}"
 
 
 def market_slot_from_name(market_slot_name: str) -> MarketSlot:
