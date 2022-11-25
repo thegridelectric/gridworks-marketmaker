@@ -19,11 +19,11 @@ logging.getLogger().addHandler(screen_handler)
 settings: config.Settings = config.Settings(_env_file=dotenv.find_dotenv())
 addr = BasicAccount(settings.sk.get_secret_value()).addr
 
-# algo_setup.dev_fund_account(
-#         settings=settings,
-#         to_addr=addr,
-#         amt_in_micros=10**6,
-#     )
+algo_setup.dev_fund_account(
+    settings=settings,
+    to_addr=addr,
+    amt_in_micros=10**6,
+)
 
 
 mm = MarketMaker()
