@@ -105,6 +105,7 @@ class MarketMaker(MarketMakerBase):
         payload = Ready_Maker(
             from_g_node_alias=self.alias,
             from_g_node_instance_id=self.g_node_instance_id,
+            time_unix_s=int(self.time()),
         ).tuple
         self.send_message(
             payload=payload,
@@ -158,7 +159,7 @@ class MarketMaker(MarketMakerBase):
         try:
             mp = self.hack_clearing_price[int(self.time())]
         except:
-            LOGGER.warning(f"Missing price for {self.time_utc_str()}")
+            LOGGER.warning(f"Missing price for {self.time_str()}")
         payload = LatestPrice_Maker(
             from_g_node_alias=self.alias,
             from_g_node_instance_id=self.settings.g_node_instance_id,

@@ -1,20 +1,20 @@
-"""Tests ready type, version 000"""
+"""Tests market.book type, version 000"""
 import json
 
 import pytest
 from pydantic import ValidationError
 
 from gwmm.errors import SchemaError
-from gwmm.schemata import Ready_Maker as Maker
+from gwmm.schemata import MarketBook_Maker as Maker
 
 
-def test_ready_generated() -> None:
+def test_market_book_generated() -> None:
+
 
     d = {
-        "TimeUnixS": 1669757715,
-        "FromGNodeAlias": "d1.time",
-        "FromGNodeInstanceId": "eac00c51-d944-4829-aaca-847bca1b8438",
-        "TypeName": "ready",
+        "Slot": ,
+        "Bids": ,
+        "TypeName": "market.book",
         "Version": "000",
     }
 
@@ -33,9 +33,9 @@ def test_ready_generated() -> None:
 
     # test Maker init
     t = Maker(
-        time_unix_s=gtuple.TimeUnixS,
-        from_g_node_alias=gtuple.FromGNodeAlias,
-        from_g_node_instance_id=gtuple.FromGNodeInstanceId,
+        slot=gtuple.Slot,
+        bids=gtuple.Bids,
+
     ).tuple
     assert t == gtuple
 
@@ -49,17 +49,12 @@ def test_ready_generated() -> None:
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d)
-    del d2["TimeUnixS"]
+    del d2["Slot"]
     with pytest.raises(SchemaError):
         Maker.dict_to_tuple(d2)
 
     d2 = dict(d)
-    del d2["FromGNodeAlias"]
-    with pytest.raises(SchemaError):
-        Maker.dict_to_tuple(d2)
-
-    d2 = dict(d)
-    del d2["FromGNodeInstanceId"]
+    del d2["Bids"]
     with pytest.raises(SchemaError):
         Maker.dict_to_tuple(d2)
 
@@ -67,8 +62,16 @@ def test_ready_generated() -> None:
     # Behavior on incorrect types
     ######################################
 
-    d2 = dict(d, TimeUnixS="1669757715.1")
-    with pytest.raises(ValidationError):
+    d2  = dict(d, Bids="Not a list.")
+    with pytest.raises(SchemaError):
+        Maker.dict_to_tuple(d2)
+
+    d2  = dict(d, Bids=["Not a list of dicts"])
+    with pytest.raises(SchemaError):
+        Maker.dict_to_tuple(d2)
+
+    d2  = dict(d, Bids= [{"Failed": "Not a GtSimpleSingleStatus"}])
+    with pytest.raises(SchemaError):
         Maker.dict_to_tuple(d2)
 
     ######################################
@@ -78,17 +81,3 @@ def test_ready_generated() -> None:
     d2 = dict(d, TypeName="not the type alias")
     with pytest.raises(ValidationError):
         Maker.dict_to_tuple(d2)
-
-    ######################################
-    # SchemaError raised if primitive attributes do not have appropriate property_format
-    ######################################
-
-    d2 = dict(d, FromGNodeAlias="a.b-h")
-    with pytest.raises(ValidationError):
-        Maker.dict_to_tuple(d2)
-
-    d2 = dict(d, FromGNodeInstanceId="d4be12d5-33ba-4f1f-b9e5")
-    with pytest.raises(ValidationError):
-        Maker.dict_to_tuple(d2)
-
-    # End of Test
