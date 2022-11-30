@@ -68,7 +68,7 @@ def version_by_type_name() -> Dict[str, str]:
         "market.type.gt": "000",
         "price.quantity": "000",
         "price.quantity.unitless": "000",
-        "ready": "000",
+        "ready": "001",
         "sim.timestep": "000",
     }
 
@@ -95,7 +95,7 @@ def status_by_versioned_type_name() -> Dict[str, str]:
         "market.type.gt.000": "Pending",
         "price.quantity.000": "Pending",
         "price.quantity.unitless.000": "Pending",
-        "ready.000": "Pending",
+        "ready.001": "Pending",
         "sim.timestep.000": "Pending",
     }
 

@@ -93,7 +93,7 @@ class MarketMaker(MarketMakerBase):
         start_row = 14
         init_t = int(self.settings.initial_time_unix_s)
         start = (init_t - (init_t % 3600)) + 3600
-        for ts_idx in range(1000):
+        for ts_idx in range(8760):
             time = start + ts_idx * 3600
             price = float(rows[start_row + ts_idx][0])
             self.hack_clearing_price[time] = MarketPrice(

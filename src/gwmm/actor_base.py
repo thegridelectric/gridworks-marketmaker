@@ -1,6 +1,5 @@
 import enum
 import functools
-import json
 import logging
 import threading
 import time
@@ -92,9 +91,9 @@ class ActorBase(ABC):
         self,
         settings: Settings,
     ):
-        self.latest_routing_key: Optional[str] = None
         self.settings: Settings = settings
-        self.agent_shutting_down_part_one: bool = False
+        self.latest_routing_key: Optional[str] = None
+        self.shutting_down: bool = False
         self.alias: str = settings.g_node_alias
         self.g_node_instance_id: str = settings.g_node_instance_id
         self.g_node_role: GNodeRole = GNodeRole(settings.g_node_role_value)
@@ -139,18 +138,31 @@ class ActorBase(ABC):
 
     def start(self) -> None:
         self.consuming_thread.start()
+        self.publishing_thread.start()
+        self.local_start()
         self._stopped = False
 
+    def local_start(self) -> None:
+        """This should be overwritten in derived class for additional threads"""
+        pass
+
     def stop(self) -> None:
-        self.commence_shutting_down()
+        self.shutting_down = True
+        self.prepare_for_death()
         while self.actor_main_stopped is False:
             time.sleep(self.SHUTDOWN_INTERVAL)
         self.stop_publisher()
         self.stop_consumer()
+        self.local_stop()
         self.consuming_thread.join()
         self.publishing_thread.join()
         self._stopping = False
         self._stopped = True
+
+    def local_stop() -> None:
+        """This should be overwritten in derived class if there is a requirement
+        to stop the additional threads started in local_start"""
+        pass
 
     @no_type_check
     def on_message(self, _unused_channel, basic_deliver, properties, body) -> None:
@@ -176,7 +188,7 @@ class ActorBase(ABC):
         """
         self.latest_routing_key = basic_deliver.routing_key
         LOGGER.debug(
-            f"In actor_base on_message. Got {basic_deliver.routing_key} with delivery tag {basic_deliver.delivery_tag}"
+            f"{self.alias}: Got {basic_deliver.routing_key} with delivery tag {basic_deliver.delivery_tag}"
         )
         self.acknowledge_message(basic_deliver.delivery_tag)
         try:
@@ -347,9 +359,6 @@ class ActorBase(ABC):
     ########################
     # Core Rabbit infrastructure
     ########################
-
-    def on_rabbit_ready(self) -> None:
-        pass
 
     def flush_consumer(self) -> None:
         self.should_reconnect_consumer = False
@@ -595,11 +604,12 @@ class ActorBase(ABC):
         :param pika.frame.Method _unused_frame: The Basic.QosOk response frame
         """
         LOGGER.info("QOS set to: %d", self._prefetch_count)
-        self.additional_start()
+        self.local_rabbit_startup()
         self.start_consuming()
-        self.publishing_thread.start()
 
-    def additional_start(self) -> None:
+    def local_rabbit_startup(self) -> None:
+        """This should be overwritten in derived class for any additional rabbit
+        bindings. DO NOT start queues here"""
         pass
 
     @no_type_check
@@ -612,7 +622,7 @@ class ActorBase(ABC):
         cancel consuming. The on_message method is passed in as a callback pika
         will invoke when a message is fully received.
         """
-        LOGGER.info("Issuing consumer related RPC commands")
+        LOGGER.info("Start consuming")
         self.add_on_cancel_consumer_callback()
         self._consumer_tag = self._consume_channel.basic_consume(
             self.queue_name, self.on_message
@@ -785,7 +795,6 @@ class ActorBase(ABC):
         """
         LOGGER.info("Publish channel opened")
         self._publish_channel = channel
-        self.on_rabbit_ready()
         self.add_on_publish_channel_close_callback()
 
     def add_on_publish_channel_close_callback(self) -> None:
@@ -904,8 +913,8 @@ class ActorBase(ABC):
     ) -> str:
         msg_type = MessageCategorySymbol.rjb.value
         from_alias_lrh = self.alias.replace(".", "-")
-        from_role = self.rabbit_role.value
         type_name_lrh = payload.TypeName.replace(".", "-")
+        from_role = self.rabbit_role.value
         if radio_channel is None:
             return f"{msg_type}.{from_alias_lrh}.{from_role}.{type_name_lrh}"
         else:
@@ -926,7 +935,6 @@ class ActorBase(ABC):
         type_name_lrh = payload.TypeName.replace(".", "-")
 
         direct_routing_key = f"{msg_type}.{from_lrh_alias}.{from_role}.{type_name_lrh}.{to_role_val}.{to_lrh_alias}"
-        LOGGER.debug(direct_routing_key)
         return direct_routing_key
 
     def type_name_from_routing_key(
@@ -1054,21 +1062,3 @@ class ActorBase(ABC):
 
     def __repr__(self) -> str:
         return f"{self.alias}"
-
-    def commence_shutting_down(self) -> None:
-        self.agent_shutting_down_part_one = True
-        self.prepare_for_death()
-
-    ###################################
-    # Time related
-    ###################################
-
-    # look for def timestep_200_received(self, payload: SimRTcTimestep200Payload) in old django
-    def sim_timestep_received(self, payload: SimTimestep) -> None:
-        pass
-
-    def new_timestep(self, payload: SimTimestep) -> None:
-        pass
-
-    def repeated_timestep(self, payload: SimTimestep) -> None:
-        pass

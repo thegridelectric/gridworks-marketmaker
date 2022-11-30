@@ -52,7 +52,7 @@ class MarketMakerBase(ActorBase):
         if r.status_code > 200:
             raise Exception("Failed to initialize time with RestAPI. Check uvicorn?")
 
-    def additional_start(self):
+    def local_rabbit_startup(self):
         rjb = MessageCategorySymbol.rjb.value
         tc_alias_lrh = self.settings.my_time_coordinator_alias.replace(".", "-")
         binding = f"{rjb}.{tc_alias_lrh}.timecoordinator.sim-timestep"
@@ -61,11 +61,6 @@ class MarketMakerBase(ActorBase):
         self._consume_channel.queue_bind(
             self.queue_name, "timecoordinatormic_tx", routing_key=binding, callback=cb
         )
-
-        self.local_start()
-
-    def local_start(self) -> None:
-        pass
 
     @no_type_check
     def on_timecoordinator_bindok(self, _unused_frame, binding) -> None:
