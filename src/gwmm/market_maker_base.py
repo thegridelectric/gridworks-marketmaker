@@ -36,6 +36,7 @@ LOGGER.setLevel(logging.INFO)
 class MarketMakerBase(ActorBase):
     def __init__(self, settings: Settings):
         super().__init__(settings=settings)
+        self.settings: Settings = settings
         self.initialize_time()
 
     def initialize_time(self):
