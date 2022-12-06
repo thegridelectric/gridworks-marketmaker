@@ -159,7 +159,8 @@ class MarketMaker(MarketMakerBase):
         try:
             mp = self.hack_clearing_price[int(self.time())]
         except:
-            LOGGER.warning(f"Missing price for {self.time_str()}")
+            LOGGER.warning(f"Missing price for {self.time_str()}. NOT SENDING A PRICE")
+            return
         payload = LatestPrice_Maker(
             from_g_node_alias=self.alias,
             from_g_node_instance_id=self.settings.g_node_instance_id,
