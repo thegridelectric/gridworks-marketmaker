@@ -44,8 +44,11 @@ class VanillaSettings(BaseSettings):
 class RabbitBrokerClient(BaseModel):
     """Settings for connecting to a Rabbit Broker"""
 
-    url: SecretStr = SecretStr("amqp://smqPublic:smqPublic@localhost:5672/d1__1")
-    host: str = "localhost"
+    url: SecretStr = SecretStr(
+        "amqp://smqPublic:smqPublic@d1-1.electricity.works:5672/d1__1"
+    )
+    # url: SecretStr = SecretStr("amqp://smqPublic:smqPublic@localhost:5672/d1__1")
+    host: str = "d1-1.electricity.works"
     username: str = "smqPublic"
     password: SecretStr = SecretStr("smqPublic")
     mqtt_port: int = 1885

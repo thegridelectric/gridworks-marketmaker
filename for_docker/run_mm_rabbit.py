@@ -1,7 +1,17 @@
-from gwmm.market_maker import MarketMaker
 import time
 
+from gwmm.market_maker import MarketMaker
+
+
+wait = 5
+
+for i in range(wait):
+    print(f"{i}/{wait} ..")
+
+print("1")
 mm = MarketMaker()
 
-time.sleep(30)
+print("2")
 mm.start()
+
+print("3")
