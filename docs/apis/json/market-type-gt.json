@@ -1,0 +1,160 @@
+{
+  "gwapi": "001",
+  "type_name": "market.type.gt",
+  "version": "000",
+  "owner": "gridworks@gridworks-consulting.com",
+  "description": "Used by MarketMakers to simultaneously run several different types of Markets. A [MarketMaker](https://gridworks.readthedocs.io/en/latest/market-maker.html) GNode can run several types of Markets. For example, it can run an hourly real-time market and also an ancillary services market for Regulation. This is captured by the concept of MarketType.",
+  "url": "https://gridworks.readthedocs.io/en/latest/market-type.html",
+  "enums": {
+    "MarketPriceUnit000": {
+      "type": "string",
+      "name": "market.price.unit.000",
+      "description": "Price unit assigned to MarketMaker MarketType",
+      "oneOf": [
+        {
+          "const": "00000000",
+          "title": "USDPerMWh",
+          "description": ""
+        }
+      ]
+    },
+    "RecognizedCurrencyUnit000": {
+      "type": "string",
+      "name": "recognized.currency.unit.000",
+      "description": "Unit of currency",
+      "oneOf": [
+        {
+          "const": "00000000",
+          "title": "Unknown",
+          "description": ""
+        },
+        {
+          "const": "e57c5143",
+          "title": "USD",
+          "description": "US Dollar"
+        },
+        {
+          "const": "f7b38fc5",
+          "title": "GBP",
+          "description": "Pounds sterling"
+        }
+      ]
+    },
+    "MarketTypeName000": {
+      "type": "string",
+      "name": "market.type.name.000",
+      "description": "Categorizes different markets run by MarketMaker",
+      "oneOf": [
+        {
+          "const": "00000000",
+          "title": "unknown",
+          "description": "Default unknown"
+        },
+        {
+          "const": "d20b81e4",
+          "title": "rt5gate5",
+          "description": "Real-time energy, 5 minute MarketSlots, gate closing 5 minutes prior to start"
+        },
+        {
+          "const": "b36cbfb4",
+          "title": "rt60gate5",
+          "description": "Real-time energy, 60 minute MarketSlots, gate closing 5 minutes prior to start"
+        },
+        {
+          "const": "94a3fe9b",
+          "title": "da60",
+          "description": "Day-ahead energy, 60 minute MarketSlots"
+        },
+        {
+          "const": "5f335bdb",
+          "title": "rt60gate30",
+          "description": "Real-time energy, 60 minute MarketSlots, gate closing 30 minutes prior to start"
+        },
+        {
+          "const": "01a84101",
+          "title": "rt15gate5",
+          "description": "Real-time energy, 15 minute MarketSlots, gate closing 5 minutes prior to start"
+        },
+        {
+          "const": "e997ccfb",
+          "title": "rt30gate5",
+          "description": "Real-time energy, 30 minute MarketSlots, gate closing 5 minutes prior to start"
+        },
+        {
+          "const": "618f9c0a",
+          "title": "rt60gate30b",
+          "description": "Real-time energy, 30 minute MarketSlots, gate closing 5 minutes prior to start, QuantityUnit AvgkW"
+        }
+      ]
+    },
+    "MarketQuantityUnit000": {
+      "type": "string",
+      "name": "market.quantity.unit.000",
+      "description": "Quantity unit assigned to MarketMaker MarketType",
+      "oneOf": [
+        {
+          "const": "00000000",
+          "title": "AvgMW",
+          "description": ""
+        },
+        {
+          "const": "c272f3b3",
+          "title": "AvgkW",
+          "description": ""
+        }
+      ]
+    }
+  },
+  "properties": {
+    "Name": {
+      "type": "string",
+      "format": "MarketTypeName000",
+      "title": "Name of the MarketType",
+      "required": true
+    },
+    "DurationMinutes": {
+      "type": "integer",
+      "title": "Duration of MarketSlots, in minutes",
+      "required": true
+    },
+    "GateClosingSeconds": {
+      "type": "integer",
+      "title": "Seconds before the start of a MarketSlot after which bids are not accepted",
+      "required": true
+    },
+    "PriceUnit": {
+      "type": "string",
+      "format": "MarketPriceUnit000",
+      "title": "Price Unit for market (e.g. USD Per MWh)",
+      "required": true
+    },
+    "QuantityUnit": {
+      "type": "string",
+      "format": "MarketQuantityUnit000",
+      "title": "Quantity Unit for market (e.g. AvgMW)",
+      "required": true
+    },
+    "CurrencyUnit": {
+      "type": "string",
+      "format": "RecognizedCurrencyUnit000",
+      "title": "Currency Unit for market (e.g. USD)",
+      "required": true
+    },
+    "PriceMax": {
+      "type": "integer",
+      "title": "PMax, required for defining bids",
+      "required": true
+    },
+    "TypeName": {
+      "type": "string",
+      "value": "market.type.gt.000",
+      "title": "The type name"
+    },
+    "Version": {
+      "type": "string",
+      "title": "The type version",
+      "default": "000",
+      "required": true
+    }
+  }
+}

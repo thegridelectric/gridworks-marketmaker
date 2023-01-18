@@ -1,0 +1,50 @@
+{
+  "gwapi": "001",
+  "type_name": "market.slot",
+  "version": "000",
+  "owner": "gridworks@gridworks-consulting.com",
+  "description": "MarketSlot",
+  "url": "https://gridworks.readthedocs.io/en/latest/market-slot.html",
+  "formats": {
+    "ReasonableUnixTimeS": {
+      "type": "string",
+      "description": "Integer reflecting unix time seconds between 1970 and 3000",
+      "example": ""
+    },
+    "LeftRightDot": {
+      "type": "string",
+      "description": "Lowercase alphanumeric words separated by periods, most significant word (on the left) starting with an alphabet character.",
+      "example": "dw1.isone.me.freedom.apple"
+    }
+  },
+  "properties": {
+    "Type": {
+      "type": "market.type.gt.000",
+      "title": "",
+      "required": true
+    },
+    "MarketMakerAlias": {
+      "type": "string",
+      "format": "LeftRightDot",
+      "title": "",
+      "required": true
+    },
+    "StartUnixS": {
+      "type": "integer",
+      "format": "ReasonableUnixTimeS",
+      "title": "",
+      "required": true
+    },
+    "TypeName": {
+      "type": "string",
+      "value": "market.slot.000",
+      "title": "The type name"
+    },
+    "Version": {
+      "type": "string",
+      "title": "The type version",
+      "default": "000",
+      "required": true
+    }
+  }
+}

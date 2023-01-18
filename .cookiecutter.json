@@ -8,7 +8,7 @@
   "friendly_name": "Gridworks Marketmaker",
   "github_user": "thegridelectric",
   "license": "MIT",
-  "package_name": "gridworks_marketmaker",
+  "package_name": "gwmm",
   "project_name": "gridworks-marketmaker",
   "version": "0.0.0"
 }

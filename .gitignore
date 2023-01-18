@@ -18,6 +18,12 @@ __pycache__/
 scratch*
 cook*
 
+# local docker dev files
+x86.yml
+x86.sh 
+arm.yml
+arm.sh 
+
 # Code generation airtable
 CodeGenerationTools/GridworksCore/SSoT/Airtable.xml
 CodeGenerationTools/GridworksCore/SassyMQ/

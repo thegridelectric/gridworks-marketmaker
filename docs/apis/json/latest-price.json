@@ -1,0 +1,98 @@
+{
+  "gwapi": "001",
+  "type_name": "latest.price",
+  "version": "000",
+  "owner": "gridworks@gridworks-consulting.com",
+  "description": "Latest Price for a MarketType, sent by a MarketMaker. The price of the current MarketSlot",
+  "url": "https://gridworks.readthedocs.io/en/latest/market-slot.html",
+  "formats": {
+    "UuidCanonicalTextual": {
+      "type": "string",
+      "description": "A string of hex words separated by hyphens of length 8-4-4-4-12.",
+      "example": "652ba6b0-c3bf-4f06-8a80-6b9832d60a25"
+    },
+    "IsoFormat": {
+      "type": "string",
+      "description": "",
+      "example": ""
+    },
+    "LeftRightDot": {
+      "type": "string",
+      "description": "Lowercase alphanumeric words separated by periods, most significant word (on the left) starting with an alphabet character.",
+      "example": "dw1.isone.me.freedom.apple"
+    },
+    "MarketSlotNameLrdFormat": {
+      "type": "string",
+      "description": "",
+      "example": ""
+    }
+  },
+  "enums": {
+    "MarketPriceUnit000": {
+      "type": "string",
+      "name": "market.price.unit.000",
+      "description": "Price unit assigned to MarketMaker MarketType",
+      "oneOf": [
+        {
+          "const": "00000000",
+          "title": "USDPerMWh",
+          "description": ""
+        }
+      ]
+    }
+  },
+  "properties": {
+    "FromGNodeAlias": {
+      "type": "string",
+      "format": "LeftRightDot",
+      "title": "",
+      "required": true
+    },
+    "FromGNodeInstanceId": {
+      "type": "string",
+      "format": "UuidCanonicalTextual",
+      "title": "",
+      "required": true
+    },
+    "PriceTimes1000": {
+      "type": "integer",
+      "title": "",
+      "required": true
+    },
+    "PriceUnit": {
+      "type": "string",
+      "format": "MarketPriceUnit000",
+      "title": "",
+      "required": true
+    },
+    "MarketSlotName": {
+      "type": "string",
+      "format": "MarketSlotNameLrdFormat",
+      "title": "",
+      "required": true
+    },
+    "IrlTimeUtc": {
+      "type": "string",
+      "format": "IsoFormat",
+      "title": "",
+      "required": false
+    },
+    "MessageId": {
+      "type": "string",
+      "format": "UuidCanonicalTextual",
+      "title": "",
+      "required": false
+    },
+    "TypeName": {
+      "type": "string",
+      "value": "latest.price.000",
+      "title": "The type name"
+    },
+    "Version": {
+      "type": "string",
+      "title": "The type version",
+      "default": "000",
+      "required": true
+    }
+  }
+}

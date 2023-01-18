@@ -1,0 +1,30 @@
+{
+  "gwapi": "001",
+  "type_name": "price.quantity.unitless",
+  "version": "000",
+  "owner": "gridworks@gridworks-consulting.com",
+  "description": "",
+  "properties": {
+    "PriceTimes1000": {
+      "type": "integer",
+      "title": "",
+      "required": true
+    },
+    "QuantityTimes1000": {
+      "type": "integer",
+      "title": "",
+      "required": true
+    },
+    "TypeName": {
+      "type": "string",
+      "value": "price.quantity.unitless.000",
+      "title": "The type name"
+    },
+    "Version": {
+      "type": "string",
+      "title": "The type version",
+      "default": "000",
+      "required": true
+    }
+  }
+}
