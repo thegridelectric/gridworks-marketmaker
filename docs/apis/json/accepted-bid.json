@@ -30,7 +30,7 @@
       "title": "",
       "required": true
     },
-    "BidList": {
+    "PqPairs": {
       "type": "price.quantity.unitless.000",
       "title": "",
       "required": true

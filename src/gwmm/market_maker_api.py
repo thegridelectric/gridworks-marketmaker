@@ -6,19 +6,16 @@ from typing import Dict
 from typing import List
 
 import dotenv
-import gridworks.utils as utils
 import pendulum
 from gridworks.utils import RestfulResponse
 
 import gwmm.config as config
+import gwmm.utils as utils
 from gwmm.data_classes.market_type import Rt60Gate30B
-from gwmm.enums import MarketPriceUnit
 from gwmm.enums import UniverseType
 from gwmm.types import AcceptedBid
-from gwmm.types import AcceptedBid_Maker
 from gwmm.types import AtnBid
 from gwmm.types import MarketMakerInfo_Maker
-from gwmm.types import MarketPrice
 from gwmm.types import MarketSlot
 from gwmm.types import MarketTypeGt
 from gwmm.types import MarketTypeGt_Maker
@@ -128,20 +125,20 @@ class MarketMakerApi:
                 f"{slot.Type.Name} quantity_unit {slot.Type.QuantityUnit}",
                 HttpStatusCode=422,
             )
-        bid_list = payload.BidList
+        pq_pairs = payload.PqPairs
         if payload.InjectionIsPositive:
             demand_bid_list: List[PriceQuantityUnitless] = []
-            for gen_pq in payload.BidList:
+            for gen_pq in payload.PqPairs:
                 demand_pq = PriceQuantityUnitless(
                     PriceTimes1000=gen_pq.PriceTimes1000,
                     QuantityTimes1000=-gen_pq.QuantityTimes1000,
                 )
                 demand_bid_list.append(demand_pq)
-            bid_list = demand_bid_list
+            pq_pairs = demand_bid_list
         accepted_bid = AcceptedBid(
             MarketSlotName=payload.MarketSlotName,
             BidderAlias=payload.BidderAlias,
-            BidList=bid_list,
+            PqPairs=pq_pairs,
             ReceivedTimeUnixNs=ts_ns,
         )
         # TODO: put slot books in database and/or redis

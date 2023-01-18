@@ -25,7 +25,9 @@ from gwmm.types import MarketMakerInfo
 from gwmm.types import SimTimestep
 
 
-settings: config.Settings = config.Settings(_env_file=dotenv.find_dotenv())
+settings: config.MarketMakerSettings = config.MarketMakerSettings(
+    _env_file=dotenv.find_dotenv()
+)
 
 app = FastAPI()
 cache = Cache(
@@ -65,7 +67,7 @@ async def main():
 
 @app.get("/get-time/")
 async def get_time():
-    time_s = await get_time()
+    time_s = await local_get_time()
     return {
         "TimeUnixS": time_s,
         "UTC": pendulum.from_timestamp(time_s).to_iso8601_string(),
@@ -102,7 +104,7 @@ async def atn_bid_received(
     return rr
 
 
-async def get_time() -> float:
+async def local_get_time() -> float:
     if mm.universe_type == UniverseType.Dev:
         time_s = await sim_time.get_time()
         return float(time_s)

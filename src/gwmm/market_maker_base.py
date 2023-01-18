@@ -36,7 +36,7 @@ LOGGER.setLevel(logging.INFO)
 class MarketMakerBase(ActorBase):
     def __init__(self, settings: MarketMakerSettings):
         super().__init__(settings=settings)
-        self.settings: Settings = settings
+        self.settings: MarketMakerSettings = settings
         self.initialize_time()
 
     def initialize_time(self):
@@ -55,7 +55,7 @@ class MarketMakerBase(ActorBase):
 
     def local_rabbit_startup(self):
         rjb = MessageCategorySymbol.rjb.value
-        tc_alias_lrh = self.settings.my_time_coordinator_alias.replace(".", "-")
+        tc_alias_lrh = self.settings.time_coordinator_alias.replace(".", "-")
         binding = f"{rjb}.{tc_alias_lrh}.timecoordinator.sim-timestep"
 
         cb = functools.partial(self.on_timecoordinator_bindok, binding=binding)

@@ -110,8 +110,8 @@ class AcceptedBid(BaseModel):
     BidderAlias: str = Field(
         title="BidderAlias",
     )
-    BidList: List[PriceQuantityUnitless] = Field(
-        title="BidList",
+    PqPairs: List[PriceQuantityUnitless] = Field(
+        title="PqPairs",
     )
     ReceivedTimeUnixNs: int = Field(
         title="ReceivedTimeUnixNs",
@@ -137,12 +137,12 @@ class AcceptedBid(BaseModel):
             raise ValueError(f"BidderAlias failed LeftRightDot format validation: {e}")
         return v
 
-    @validator("BidList")
-    def _check_bid_list(cls, v: List) -> List:
+    @validator("PqPairs")
+    def _check_pq_pairs(cls, v: List) -> List:
         for elt in v:
             if not isinstance(elt, PriceQuantityUnitless):
                 raise ValueError(
-                    f"elt {elt} of BidList must have type PriceQuantityUnitless."
+                    f"elt {elt} of PqPairs must have type PriceQuantityUnitless."
                 )
         return v
 
@@ -150,10 +150,10 @@ class AcceptedBid(BaseModel):
         d = self.dict()
 
         # Recursively call as_dict() for the SubTypes
-        bid_list = []
-        for elt in self.BidList:
-            bid_list.append(elt.as_dict())
-        d["BidList"] = bid_list
+        pq_pairs = []
+        for elt in self.PqPairs:
+            pq_pairs.append(elt.as_dict())
+        d["PqPairs"] = pq_pairs
         return d
 
     def as_type(self) -> str:
@@ -168,13 +168,13 @@ class AcceptedBid_Maker:
         self,
         market_slot_name: str,
         bidder_alias: str,
-        bid_list: List[PriceQuantityUnitless],
+        pq_pairs: List[PriceQuantityUnitless],
         received_time_unix_ns: int,
     ):
         self.tuple = AcceptedBid(
             MarketSlotName=market_slot_name,
             BidderAlias=bidder_alias,
-            BidList=bid_list,
+            PqPairs=pq_pairs,
             ReceivedTimeUnixNs=received_time_unix_ns,
             #
         )
@@ -206,19 +206,19 @@ class AcceptedBid_Maker:
             raise SchemaError(f"dict {d2} missing MarketSlotName")
         if "BidderAlias" not in d2.keys():
             raise SchemaError(f"dict {d2} missing BidderAlias")
-        if "BidList" not in d2.keys():
-            raise SchemaError(f"dict {d2} missing BidList")
-        bid_list = []
-        if not isinstance(d2["BidList"], List):
-            raise SchemaError("BidList must be a List!")
-        for elt in d2["BidList"]:
+        if "PqPairs" not in d2.keys():
+            raise SchemaError(f"dict {d2} missing PqPairs")
+        pq_pairs = []
+        if not isinstance(d2["PqPairs"], List):
+            raise SchemaError("PqPairs must be a List!")
+        for elt in d2["PqPairs"]:
             if not isinstance(elt, dict):
                 raise SchemaError(
-                    f"elt {elt} of BidList must be "
+                    f"elt {elt} of PqPairs must be "
                     "PriceQuantityUnitless but not even a dict!"
                 )
-            bid_list.append(PriceQuantityUnitless_Maker.dict_to_tuple(elt))
-        d2["BidList"] = bid_list
+            pq_pairs.append(PriceQuantityUnitless_Maker.dict_to_tuple(elt))
+        d2["PqPairs"] = pq_pairs
         if "ReceivedTimeUnixNs" not in d2.keys():
             raise SchemaError(f"dict {d2} missing ReceivedTimeUnixNs")
         if "TypeName" not in d2.keys():
@@ -227,7 +227,7 @@ class AcceptedBid_Maker:
         return AcceptedBid(
             MarketSlotName=d2["MarketSlotName"],
             BidderAlias=d2["BidderAlias"],
-            BidList=d2["BidList"],
+            PqPairs=d2["PqPairs"],
             ReceivedTimeUnixNs=d2["ReceivedTimeUnixNs"],
             TypeName=d2["TypeName"],
             Version="000",

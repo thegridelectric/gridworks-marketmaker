@@ -14,6 +14,88 @@ from gwmm.types.market_type_gt import MarketTypeGt
 from gwmm.types.market_type_gt import MarketTypeGt_Maker
 
 
+def check_is_left_right_dot(v: str) -> None:
+    """
+    LeftRightDot format: Lowercase alphanumeric words separated by periods,
+    most significant word (on the left) starting with an alphabet character.
+
+    Raises:
+        ValueError: if not LeftRightDot format
+    """
+    from typing import List
+
+    try:
+        x: List[str] = v.split(".")
+    except:
+        raise ValueError(f"Failed to seperate {v} into words with split'.'")
+    first_word = x[0]
+    first_char = first_word[0]
+    if not first_char.isalpha():
+        raise ValueError(f"Most significant word of {v} must start with alphabet char.")
+    for word in x:
+        if not word.isalnum():
+            raise ValueError(f"words of {v} split by by '.' must be alphanumeric.")
+    if not v.islower():
+        raise ValueError(f"All characters of {v} must be lowercase.")
+
+
+def check_is_market_type_name_lrd_format(v: str) -> None:
+    from gwmm.enums import MarketTypeName
+
+    try:
+        x = v.split(".")
+    except AttributeError:
+        raise ValueError(f"{v} failed to split on '.'")
+    if not x[0] in MarketTypeName.values():
+        raise ValueError(f"{v} not recognized MarketType")
+    g_node_alias = ".".join(x[1:])
+    check_is_left_right_dot(g_node_alias)
+
+
+def check_is_market_slot_name_lrd_format(v: str) -> None:
+    """
+    MaketSlotNameLrdFormat: the format of a MarketSlotName.
+      - The first word must be a MarketTypeName
+      - The last word (unix time of market slot start) must
+      be a 10-digit integer divisible by 300 (i.e. all MarketSlots
+      start at the top of 5 minutes)
+      - More strictly, the last word must be the start of a
+      MarketSlot for that MarketType (i.e. divisible by 3600
+      for hourly markets)
+      - The middle words have LeftRightDot format (GNodeAlias
+      of the MarketMaker)
+    Example: rt60gate5.d1.isone.ver.keene.1673539200
+
+    """
+    from gwmm.data_classes.market_type import MarketType
+
+    try:
+        x = v.split(".")
+    except AttributeError:
+        raise ValueError(f"{v} failed to split on '.'")
+    slot_start = x[-1]
+    if len(slot_start) != 10:
+        raise ValueError(f"slot start {slot_start} not of length 10")
+    try:
+        slot_start = int(slot_start)
+    except ValueError:
+        raise ValueError(f"slot start {slot_start} not an int")
+    if slot_start % 300 != 0:
+        raise ValueError(f"slot start {slot_start} not a multiple of 300")
+
+    market_type_name_lrd = ".".join(x[:-1])
+    try:
+        check_is_market_type_name_lrd_format(market_type_name_lrd)
+    except ValueError as e:
+        raise ValueError(f"e")
+
+    market_type = MarketType.by_id[market_type_name_lrd.split(".")[0]]
+    if not slot_start % (market_type.duration_minutes * 60) == 0:
+        raise ValueError(
+            f"market_slot_start_s mod {(market_type.duration_minutes * 60)} must be 0"
+        )
+
+
 class MarketMakerInfo(BaseModel):
     """ """
 

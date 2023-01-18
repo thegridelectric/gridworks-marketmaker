@@ -1,11 +1,6 @@
 """Settings for a MarketMaker, readable from environment and/or from env files."""
 
-import pendulum
-from gridworks.gw_config import AlgoApiSecrets
 from gridworks.gw_config import GNodeSettings
-from gridworks.gw_config import Public
-from gridworks.gw_config import SupervisorSettings
-from pydantic import BaseSettings
 from pydantic import SecretStr
 
 

@@ -13,7 +13,7 @@ Python pydantic class corresponding to  json type ```accepted.bid```.
     - Description:
     - Format: LeftRightDot
 
-**BidList**:
+**PqPairs**:
     - Description:
 
 **ReceivedTimeUnixNs**:

@@ -1,27 +1,24 @@
 # Gridworks Marketmaker
 
-This is the Python SDK for building 
-[MarketMakers](https://gridworks.readthedocs.io/en/latest/market-maker.html) for GridWorks.   GridWorks uses distributed actors to balance the electric grid, and MarketMakers are the actors brokering this grid balancing via the markets they run for energy and balancing services.
+This is the Python SDK for building
+[MarketMakers](https://gridworks.readthedocs.io/en/latest/market-maker.html) for GridWorks. GridWorks uses distributed actors to balance the electric grid, and MarketMakers are the actors brokering this grid balancing via the markets they run for energy and balancing services.
 
 This SDK is available as the [gridworks-marketmaker](https://pypi.org/project/gridworks-marketmaker/) pypi package. Documentation
 specific to using this SDK is available [here](https://gridworks-marketmaker.readthedocs.io/). If this is your first time
 with GridWorks code, please start with the [main GridWorks doc](https://gridworks.readthedocs.io/).
 
-
-
 MarketMakers support grid balancing by running markets. They are geared to serve millions of coordinated and intelligent
 [Transactive Devices](https://gridworks.readthedocs.io/en/latest/transactive-device.html), represented in their
-markets by  [AtomicTNodes](https://gridworks.readthedocs.io/en/latest/atomic-t-node.html). The veracity of the
+markets by [AtomicTNodes](https://gridworks.readthedocs.io/en/latest/atomic-t-node.html). The veracity of the
 ex-poste energy and power data provided by AtomicTNodes to the MarketMaker is backed up via a series of GridWorks Certificates
-globally visible on the Algorand blockchain.  These include the foundational
+globally visible on the Algorand blockchain. These include the foundational
 [TaDeeds](https://gridworks.readthedocs.io/en/latest/ta-deed.html) that establish ownership of the underlying
-Transactive Device, and the [TaTradingrights](https://gridworks.readthedocs.io/en/latest/ta-trading-rights.html) that
+Transactive Device, and the [TaTradingRights](https://gridworks.readthedocs.io/en/latest/ta-trading-rights.html) that
 give the AtomicTNode authority to represent the Transactive Device in its MarketMaker's markets.
-
 
 ## Millinocket MarketMaker directions
 
-These are directions for running this code as the MarketMaker in the [Millinocket tutorial](https://gridworks.readthedocs.io/en/latest/millinocket-tutorial.html).  These directions assume you have **already started docker sandbox and the GridWorks dev rabbit broker**, as described in the [Demo prep](https://gridworks.readthedocs.io/en/latest/millinocket-tutorial.html#demo-prep).
+These are directions for running this code as the MarketMaker in the [Millinocket tutorial](https://gridworks.readthedocs.io/en/latest/millinocket-tutorial.html). These directions assume you have **already started docker sandbox and the GridWorks dev rabbit broker**, as described in the [Demo prep](https://gridworks.readthedocs.io/en/latest/millinocket-tutorial.html#demo-prep).
 
 1. Clone this repo
 
@@ -32,24 +29,24 @@ These are directions for running this code as the MarketMaker in the [Millinocke
    source venv/bin/activate
    pip install -e .
    ```
+
 3.Run the FastAPI half of the MarketMaker:
 
 ```
-uvicorn gwmm.rest_api:app --host localhost --port 7997 --workers 5
+./millinocket_api.sh
 ```
 
     - http://localhost:7997/ shows market maker information
     - http://localhost:7997/get-time/ shows the current time of the simulation
 
-4. Run the rabbit half of the MarketMaker:
+4. Run the rabbit actor half of the MarketMaker:
 
 ```
-python demo.py
+python millinocket_mm.py
 ```
 
 NOTE: This requires a TimeCoordinator and at least one AtomicTNode in order
-for time to move forward. 
-
+for time to move forward.
 
 ## Contributing
 

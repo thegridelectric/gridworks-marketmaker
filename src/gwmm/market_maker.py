@@ -3,7 +3,6 @@
 import csv
 import logging
 import math
-import random
 import time
 import uuid
 from typing import Dict
@@ -11,13 +10,12 @@ from typing import List
 
 import dotenv
 import gridworks.algo_utils as algo_utils
-import gridworks.utils as utils
 import pendulum
-import requests
 from gridworks.algo_utils import BasicAccount
 from gridworks.utils import RestfulResponse
 
 import gwmm.config as config
+import gwmm.utils as utils
 from gwmm.data_classes.market_type import Rt60Gate30B
 from gwmm.enums import GNodeRole
 from gwmm.enums import MarketPriceUnit
@@ -28,15 +26,12 @@ from gwmm.market_maker_base import MarketMakerBase
 from gwmm.types import AtnBid
 from gwmm.types import LatestPrice_Maker
 from gwmm.types import MarketBook
-from gwmm.types import MarketMakerInfo_Maker
 from gwmm.types import MarketPrice
 from gwmm.types import MarketSlot
-from gwmm.types import MarketSlot_Maker
 from gwmm.types import MarketTypeGt
 from gwmm.types import MarketTypeGt_Maker
 from gwmm.types import Ready_Maker
 from gwmm.types import SimTimestep
-from gwmm.types.price_quantity_unitless import PriceQuantityUnitless
 
 
 LOG_FORMAT = (
@@ -82,7 +77,7 @@ class MarketMaker(MarketMakerBase):
         if algo_utils.algos(self.acct.addr) < 0.5:
             raise Exception(f"MarketMaker must be funded!")
 
-    def initialize_hack_clearing_price(self) -> Dict[int, MarketPrice]:
+    def initialize_hack_clearing_price(self) -> None:
         file = "input_data/dev_prices.csv"
         from typing import List
 
@@ -111,7 +106,7 @@ class MarketMaker(MarketMakerBase):
         self.send_message(
             payload=payload,
             to_role=GNodeRole.TimeCoordinator,
-            to_g_node_alias=self.settings.my_time_coordinator_alias,
+            to_g_node_alias=self.settings.time_coordinator_alias,
         )
 
     def new_timestep(self, payload: SimTimestep) -> None:
@@ -238,6 +233,34 @@ class MarketMaker(MarketMakerBase):
                     radio_channel=market_type.Name,
                 )
 
+    def check_market_creds(self, payload: AtnBid) -> RestfulResponse:
+        """
+        payload.MarketFeeTxId needs to be a transaction id for a payment
+        from the bidder's Algo address to the MarketMaker. Linking the bidder's
+        GNodeInstance to the bidder's Algo address can be checked with a call
+        to the World registry.
+
+        The Market fee has to be sufficient (comparable to gas).
+
+        The transaction has to have happened within a reasonable time (last hour).
+
+        The bidder's Algo address must own a single TaTradingRights, and that
+        must be the current TaTradingRights for the corresponding TerminalAsset.
+
+        Most of this will be tucked into axioms checked by Bid_Maker, which
+        will run for the bid generator as well and hopefully catch a lot of
+        the mistakes before the bid is submitted.
+
+        Args:
+            payload (Bid): _description_
+
+        Returns:
+            RestfulResponse: HttpStatusCode 200 if everything checks out,
+            otherwise 422 with Note explaining why.
+        """
+        txn = payload.SignedMarketFeeTxn
+        return RestfulResponse(Note="Has TaTradingRights; paid market fee")
+
     ###################
     # Managing books
     ###################
@@ -262,7 +285,7 @@ class MarketMaker(MarketMakerBase):
     def update_slot_books(self):
         for market_type in self.market_types:
             t = self._time
-            gc_delta = market_type.GateClosingMinutes * 60
+            gc_delta = market_type.GateClosingSeconds
             market_delta = market_type.DurationMinutes * 60
             latest = math.floor(t / market_delta)
             next_to_open = math.ceil((t + gc_delta) / market_delta)
@@ -307,7 +330,3 @@ class MarketMaker(MarketMakerBase):
 
     def market_slot_duration_s(self, market_type: MarketTypeGt) -> int:
         return market_type.DurationMinutes * 60
-
-    @property
-    def short_alias(self) -> str:
-        return self.alias.split(".")[-1]
