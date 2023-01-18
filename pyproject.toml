@@ -52,9 +52,6 @@ myst-parser = {version = ">=0.16.1"}
 [tool.poetry.scripts]
 gridworks-marketmaker = "gwmm.__main__:main"
 
-[tool.poetry.group.dev.dependencies]
-ipykernel = "^6.17.1"
-
 [tool.coverage.paths]
 source = ["src", "*/site-packages"]
 tests = ["tests", "*/tests"]
