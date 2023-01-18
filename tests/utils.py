@@ -92,6 +92,7 @@ class SupervisorStubRecorder(ActorBase):
 
 
 class MarketMakerStubRecorder(MarketMakerBase):
+    """MarketMakerBase for use in testing."""
     messages_received: int
     messages_routed_internally: int
     latest_from_role: Optional[str]

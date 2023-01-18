@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gwmm"
-version = "0.0.0"
+version = "0.0.1"
 description = "Gridworks Marketmaker"
 authors = ["Jessica Millar <jmillar@gridworks-consulting.com>"]
 license = "MIT"
