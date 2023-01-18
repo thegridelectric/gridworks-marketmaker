@@ -51,7 +51,9 @@ LOGGER.setLevel(logging.INFO)
 class MarketMaker(MarketMakerBase):
     def __init__(
         self,
-        settings: config.Settings = config.Settings(_env_file=dotenv.find_dotenv()),
+        settings: config.MarketMakerSettings = config.MarketMakerSettings(
+            _env_file=dotenv.find_dotenv()
+        ),
     ):
         super().__init__(settings=settings)
         self.universe_type = UniverseType(self.settings.universe_type_value)

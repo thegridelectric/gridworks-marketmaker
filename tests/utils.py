@@ -5,7 +5,8 @@ from typing import Optional
 from gridworks.actor_base import ActorBase
 from gridworks.actor_base import OnSendMessageDiagnostic
 
-from gwmm.config import Settings
+from gwmm.config import MarketMakerSettings
+from gwmm.config import SupervisorSettings
 from gwmm.enums import GNodeRole
 from gwmm.market_maker_base import MarketMakerBase
 from gwmm.types import AtnBid
@@ -53,7 +54,7 @@ class SupervisorStubRecorder(ActorBase):
     latest_payload: Optional[HeartbeatA]
     routing_to_super__heartbeat_a__worked: bool = False
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: SupervisorSettings):
         self.messages_received = 0
         self.messages_routed_internally = 0
         self.latest_from_role: Optional[str] = None
@@ -97,7 +98,7 @@ class MarketMakerStubRecorder(MarketMakerBase):
     latest_from_alias: Optional[str]
     latest_payload: Optional[HeartbeatA]
 
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: MarketMakerSettings):
         self.messages_received = 0
         self.messages_routed_internally = 0
         self.latest_from_role: Optional[str] = None

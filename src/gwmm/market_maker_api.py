@@ -28,7 +28,9 @@ from gwmm.types.price_quantity_unitless import PriceQuantityUnitless
 class MarketMakerApi:
     def __init__(
         self,
-        settings: config.Settings = config.Settings(_env_file=dotenv.find_dotenv()),
+        settings: config.MarketMakerSettings = config.MarketMakerSettings(
+            _env_file=dotenv.find_dotenv()
+        ),
     ):
         self.settings = settings
 

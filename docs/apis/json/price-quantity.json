@@ -1,0 +1,78 @@
+{
+  "gwapi": "001",
+  "type_name": "price.quantity",
+  "version": "000",
+  "owner": "gridworks@gridworks-consulting.com",
+  "description": "",
+  "enums": {
+    "MarketPriceUnit000": {
+      "type": "string",
+      "name": "market.price.unit.000",
+      "description": "Price unit assigned to MarketMaker MarketType",
+      "oneOf": [
+        {
+          "const": "00000000",
+          "title": "USDPerMWh",
+          "description": ""
+        }
+      ]
+    },
+    "MarketQuantityUnit000": {
+      "type": "string",
+      "name": "market.quantity.unit.000",
+      "description": "Quantity unit assigned to MarketMaker MarketType",
+      "oneOf": [
+        {
+          "const": "00000000",
+          "title": "AvgMW",
+          "description": ""
+        },
+        {
+          "const": "c272f3b3",
+          "title": "AvgkW",
+          "description": ""
+        }
+      ]
+    }
+  },
+  "properties": {
+    "PriceTimes1000": {
+      "type": "integer",
+      "title": "",
+      "required": true
+    },
+    "QuantityTimes1000": {
+      "type": "integer",
+      "title": "",
+      "required": true
+    },
+    "PriceUnit": {
+      "type": "string",
+      "format": "MarketPriceUnit000",
+      "title": "",
+      "required": true
+    },
+    "QuantityUnit": {
+      "type": "string",
+      "format": "MarketQuantityUnit000",
+      "title": "",
+      "required": true
+    },
+    "InjectionIsPositive": {
+      "type": "boolean",
+      "title": "",
+      "required": true
+    },
+    "TypeName": {
+      "type": "string",
+      "value": "price.quantity.000",
+      "title": "The type name"
+    },
+    "Version": {
+      "type": "string",
+      "title": "The type version",
+      "default": "000",
+      "required": true
+    }
+  }
+}

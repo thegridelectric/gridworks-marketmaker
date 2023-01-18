@@ -1,0 +1,55 @@
+{
+  "gwapi": "001",
+  "type_name": "accepted.bid",
+  "version": "000",
+  "owner": "gridworks@gridworks-consulting.com",
+  "description": "Bid acceptance sent from MarketMaker to a market partipant. This is a legally binding contract for the bidder to consume or produce the quantity in its Bid consistent with the actual price.",
+  "url": "https://gridworks.readthedocs.io/en/latest/market-bid.html",
+  "formats": {
+    "LeftRightDot": {
+      "type": "string",
+      "description": "Lowercase alphanumeric words separated by periods, most significant word (on the left) starting with an alphabet character.",
+      "example": "dw1.isone.me.freedom.apple"
+    },
+    "MarketSlotNameLrdFormat": {
+      "type": "string",
+      "description": "",
+      "example": ""
+    }
+  },
+  "properties": {
+    "MarketSlotName": {
+      "type": "string",
+      "format": "MarketSlotNameLrdFormat",
+      "title": "",
+      "required": true
+    },
+    "BidderAlias": {
+      "type": "string",
+      "format": "LeftRightDot",
+      "title": "",
+      "required": true
+    },
+    "BidList": {
+      "type": "price.quantity.unitless.000",
+      "title": "",
+      "required": true
+    },
+    "ReceivedTimeUnixNs": {
+      "type": "integer",
+      "title": "",
+      "required": true
+    },
+    "TypeName": {
+      "type": "string",
+      "value": "accepted.bid.000",
+      "title": "The type name"
+    },
+    "Version": {
+      "type": "string",
+      "title": "The type version",
+      "default": "000",
+      "required": true
+    }
+  }
+}

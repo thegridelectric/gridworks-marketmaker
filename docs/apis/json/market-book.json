@@ -1,0 +1,30 @@
+{
+  "gwapi": "001",
+  "type_name": "market.book",
+  "version": "000",
+  "owner": "gridworks@gridworks-consulting.com",
+  "description": "MarketMaker's list of bids for a MarketSlot",
+  "properties": {
+    "Slot": {
+      "type": "market.slot.000",
+      "title": "MarketSlot the book is for",
+      "required": true
+    },
+    "Bids": {
+      "type": "accepted.bid.000",
+      "title": "List of bids in the book",
+      "required": true
+    },
+    "TypeName": {
+      "type": "string",
+      "value": "market.book.000",
+      "title": "The type name"
+    },
+    "Version": {
+      "type": "string",
+      "title": "The type version",
+      "default": "000",
+      "required": true
+    }
+  }
+}

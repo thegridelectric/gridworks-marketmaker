@@ -1,5 +1,3 @@
-""" GpsPoint Base Class Definition """
-
 from typing import Dict
 
 

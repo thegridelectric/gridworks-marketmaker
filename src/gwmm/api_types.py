@@ -4,7 +4,7 @@ from typing import List
 from typing import no_type_check
 
 from gwmm.types import AcceptedBid_Maker
-from gwmm.types import BidAck_Maker
+from gwmm.types import AtnBid_Maker
 from gwmm.types import GNodeGt_Maker
 from gwmm.types import HeartbeatA_Maker
 from gwmm.types import LatestPrice_Maker
@@ -26,7 +26,7 @@ TypeMakerByName: Dict[str, HeartbeatA_Maker] = {}
 def type_makers() -> List[HeartbeatA_Maker]:
     return [
         AcceptedBid_Maker,
-        BidAck_Maker,
+        AtnBid_Maker,
         GNodeGt_Maker,
         HeartbeatA_Maker,
         LatestPrice_Maker,
@@ -54,7 +54,7 @@ def version_by_type_name() -> Dict[str, str]:
 
     v: Dict[str, str] = {
         "accepted.bid": "000",
-        "bid.ack": "000",
+        "atn.bid": "001",
         "g.node.gt": "002",
         "heartbeat.a": "100",
         "latest.price": "000",
@@ -80,7 +80,7 @@ def status_by_versioned_type_name() -> Dict[str, str]:
 
     v: Dict[str, str] = {
         "accepted.bid.000": "Pending",
-        "bid.ack.000": "Pending",
+        "atn.bid.001": "Pending",
         "g.node.gt.002": "Pending",
         "heartbeat.a.100": "Pending",
         "latest.price.000": "Pending",

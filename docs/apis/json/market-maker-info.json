@@ -1,0 +1,42 @@
+{
+  "gwapi": "001",
+  "type_name": "market.maker.info",
+  "version": "000",
+  "owner": "gridworks@gridworks-consulting.com",
+  "description": "",
+  "properties": {
+    "GNodeAlias": {
+      "type": "string",
+      "format": "LeftRightDot",
+      "title": "",
+      "required": true
+    },
+    "MarketTypeList": {
+      "type": "market.type.gt.000",
+      "title": "",
+      "required": true
+    },
+    "SampleMarketName": {
+      "type": "string",
+      "title": "",
+      "required": true
+    },
+    "SampleMarketSlotName": {
+      "type": "string",
+      "format": "MarketSlotNameLrdFormat",
+      "title": "",
+      "required": true
+    },
+    "TypeName": {
+      "type": "string",
+      "value": "market.maker.info.000",
+      "title": "The type name"
+    },
+    "Version": {
+      "type": "string",
+      "title": "The type version",
+      "default": "000",
+      "required": true
+    }
+  }
+}

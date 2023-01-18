@@ -1,4 +1,4 @@
-"""Type atn.bid, version 000"""
+"""Type atn.bid, version 001"""
 import json
 from enum import auto
 from typing import Any
@@ -11,6 +11,7 @@ from gridworks.errors import SchemaError
 from gridworks.message import as_enum
 from pydantic import BaseModel
 from pydantic import Field
+from pydantic import root_validator
 from pydantic import validator
 
 from gwmm.enums import MarketPriceUnit
@@ -320,20 +321,22 @@ def check_is_market_slot_name_lrd_format(v: str) -> None:
         )
 
 
-def check_is_algo_msg_pack_encoded(v: str) -> None:
+def check_is_algo_address_string_format(v: str) -> None:
     """
-    AlgoMSgPackEncoded format: the format of an  transaction sent to
-    the Algorand blockchain.
+    AlgoAddressStringFormat format: The public key of a private/public Ed25519
+    key pair, transformed into an  Algorand address, by adding a 4-byte checksum
+    to the end of the public key and then encoding in base32.
 
     Raises:
-        ValueError: if not AlgoMSgPackEncoded  format
+        ValueError: if not AlgoAddressStringFormat format
     """
     import algosdk
 
+    at = algosdk.abi.AddressType()
     try:
-        algosdk.encoding.future_msgpack_decode(v)
+        result = at.decode(at.encode(v))
     except Exception as e:
-        raise ValueError(f"Not AlgoMsgPackEncoded format: {e}")
+        raise ValueError(f"Not AlgoAddressStringFormat: {e}")
 
 
 class AtnBid(BaseModel):
@@ -350,8 +353,9 @@ class AtnBid(BaseModel):
     MarketSlotName: str = Field(
         title="MarketSlotName",
     )
-    BidList: List[PriceQuantityUnitless] = Field(
-        title="BidList",
+    PqPairs: List[PriceQuantityUnitless] = Field(
+        title="Price Quantity Pairs",
+        description="The list of Price Quantity Pairs making up the bid. The units are provided by the AtnBid.PriceUnit and AtnBid.QuantityUnit.",
     )
     InjectionIsPositive: bool = Field(
         title="InjectionIsPositive",
@@ -369,7 +373,7 @@ class AtnBid(BaseModel):
         title="SignedMarketFeeTxn",
     )
     TypeName: Literal["atn.bid"] = "atn.bid"
-    Version: str = "000"
+    Version: str = "001"
 
     @validator("BidderAlias")
     def _check_bidder_alias(cls, v: str) -> str:
@@ -399,12 +403,12 @@ class AtnBid(BaseModel):
             )
         return v
 
-    @validator("BidList")
-    def _check_bid_list(cls, v: List) -> List:
+    @validator("PqPairs")
+    def _check_pq_pairs(cls, v: List) -> List:
         for elt in v:
             if not isinstance(elt, PriceQuantityUnitless):
                 raise ValueError(
-                    f"elt {elt} of BidList must have type PriceQuantityUnitless."
+                    f"elt {elt} of PqPairs must have type PriceQuantityUnitless."
                 )
         return v
 
@@ -426,14 +430,30 @@ class AtnBid(BaseModel):
             )
         return v
 
+    @root_validator
+    def check_axiom_1(cls, v: dict) -> dict:
+        """
+        Axiom 1: PqPairs PriceMax matches MarketType.
+        There is a GridWorks global list of MarketTypes (a GridWorks type), identified by their MarketTypeNames (a GridWorks enum).  The MarketType has a PriceMax, which must be the first price of the first PriceQuantity pair in PqPairs.
+        """
+        raise NotImplementedError("Implement check for axiom 1")
+
+    @root_validator
+    def check_axiom_2(cls, v: dict) -> dict:
+        """
+        Axiom 2: .
+
+        """
+        raise NotImplementedError("Implement check for axiom 2")
+
     def as_dict(self) -> Dict[str, Any]:
         d = self.dict()
 
         # Recursively call as_dict() for the SubTypes
-        bid_list = []
-        for elt in self.BidList:
-            bid_list.append(elt.as_dict())
-        d["BidList"] = bid_list
+        pq_pairs = []
+        for elt in self.PqPairs:
+            pq_pairs.append(elt.as_dict())
+        d["PqPairs"] = pq_pairs
         del d["PriceUnit"]
         PriceUnit = as_enum(self.PriceUnit, MarketPriceUnit, MarketPriceUnit.default())
         d["PriceUnitGtEnumSymbol"] = MarketPriceUnitMap.local_to_type(PriceUnit)
@@ -452,14 +472,14 @@ class AtnBid(BaseModel):
 
 class AtnBid_Maker:
     type_name = "atn.bid"
-    version = "000"
+    version = "001"
 
     def __init__(
         self,
         bidder_alias: str,
         bidder_g_node_instance_id: str,
         market_slot_name: str,
-        bid_list: List[PriceQuantityUnitless],
+        pq_pairs: List[PriceQuantityUnitless],
         injection_is_positive: bool,
         price_unit: MarketPriceUnit,
         quantity_unit: MarketQuantityUnit,
@@ -469,7 +489,7 @@ class AtnBid_Maker:
             BidderAlias=bidder_alias,
             BidderGNodeInstanceId=bidder_g_node_instance_id,
             MarketSlotName=market_slot_name,
-            BidList=bid_list,
+            PqPairs=pq_pairs,
             InjectionIsPositive=injection_is_positive,
             PriceUnit=price_unit,
             QuantityUnit=quantity_unit,
@@ -506,19 +526,19 @@ class AtnBid_Maker:
             raise SchemaError(f"dict {d2} missing BidderGNodeInstanceId")
         if "MarketSlotName" not in d2.keys():
             raise SchemaError(f"dict {d2} missing MarketSlotName")
-        if "BidList" not in d2.keys():
-            raise SchemaError(f"dict {d2} missing BidList")
-        bid_list = []
-        if not isinstance(d2["BidList"], List):
-            raise SchemaError("BidList must be a List!")
-        for elt in d2["BidList"]:
+        if "PqPairs" not in d2.keys():
+            raise SchemaError(f"dict {d2} missing PqPairs")
+        pq_pairs = []
+        if not isinstance(d2["PqPairs"], List):
+            raise SchemaError("PqPairs must be a List!")
+        for elt in d2["PqPairs"]:
             if not isinstance(elt, dict):
                 raise SchemaError(
-                    f"elt {elt} of BidList must be "
+                    f"elt {elt} of PqPairs must be "
                     "PriceQuantityUnitless but not even a dict!"
                 )
-            bid_list.append(PriceQuantityUnitless_Maker.dict_to_tuple(elt))
-        d2["BidList"] = bid_list
+            pq_pairs.append(PriceQuantityUnitless_Maker.dict_to_tuple(elt))
+        d2["PqPairs"] = pq_pairs
         if "InjectionIsPositive" not in d2.keys():
             raise SchemaError(f"dict {d2} missing InjectionIsPositive")
         if "PriceUnitGtEnumSymbol" not in d2.keys():
@@ -546,11 +566,11 @@ class AtnBid_Maker:
             BidderAlias=d2["BidderAlias"],
             BidderGNodeInstanceId=d2["BidderGNodeInstanceId"],
             MarketSlotName=d2["MarketSlotName"],
-            BidList=d2["BidList"],
+            PqPairs=d2["PqPairs"],
             InjectionIsPositive=d2["InjectionIsPositive"],
             PriceUnit=d2["PriceUnit"],
             QuantityUnit=d2["QuantityUnit"],
             SignedMarketFeeTxn=d2["SignedMarketFeeTxn"],
             TypeName=d2["TypeName"],
-            Version="000",
+            Version="001",
         )

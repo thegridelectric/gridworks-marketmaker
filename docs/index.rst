@@ -2,20 +2,23 @@ GridWorks MarketMaker
 =======================
 
 
-This is the ` GridWorks <https://gridworks.readthedocs.io/>`_ Python SDK for building 
-`MarketMaker Actors <https://gridworks.readthedocs.io/en/latest/market-maker.html>`_. They run markets for the electric
-grid (energy and other) in GridWorks. They are geared to serve millions of coordinated and intelligent 
+This is the  Python SDK for building
+`MarketMakers <https://gridworks.readthedocs.io/en/latest/market-maker.html>`_ for GridWorks. GridWorks uses distributed 
+actors to balance the electric grid, and MarketMakers are the actors brokering this grid balancing via the markets
+they run for energy and balancing services.
+
+This SDK is available as the `gridworks-marketmaker <https://pypi.org/project/gridworks-marketmaker/>`_ pypi package. Documentation
+specific to using this SDK is available `here <https://gridworks-marketmaker.readthedocs.io/>`_. If this is your first time
+with GridWorks code, please start with the `main GridWorks docs <https://gridworks.readthedocs.io/>`_.
+
+MarketMakers support grid balancing by running markets. They are geared to serve millions of coordinated and intelligent
 `Transactive Devices <https://gridworks.readthedocs.io/en/latest/transactive-device.html>`_, represented in their
 markets by `AtomicTNodes <https://gridworks.readthedocs.io/en/latest/atomic-t-node.html>`_. The veracity of the
-ex-poste energy and power data provided by AtomicTNodes to the MarketMaker is backed up via a series of GridWorks Certificates 
-globally visible on the Algorand blockchain.  These include the foundational 
+ex-poste energy and power data provided by AtomicTNodes to the MarketMaker is backed up via a series of GridWorks Certificates
+globally visible on the Algorand blockchain.  These include the foundational
 `TaDeeds <https://gridworks.readthedocs.io/en/latest/ta-deed.html>`_ that establish ownership of the underlying
-transactive device, and Scada Certificate establishing the credentials of the code running locally on or attached to
-the transcactive device, and the  [ta-trading-rights](https://gridworks.readthedocs.io/en/latest/ta-trading-rights.html) that
-give the AtomicTNode authority to represent the Transactive Device in markets. 
-
-To explore the rest of GridWorks, visit the `GridWorks docs <https://gridworks.readthedocs.io/en/latest/>`_.
-
+Transactive Device, and the  `TaTradingRights <https://gridworks.readthedocs.io/en/latest/ta-trading-rights.html>`_ that
+give the AtomicTNode authority to represent the Transactive Device in its MarketMaker's markets.
 
 
 Installation
@@ -54,6 +57,8 @@ Installation
     DataClasses <data-classes>
     Enums <enums>
     Types <sdk-types>
+    MarketMakerApi <market-maker-api>
+    MarketMakerBase <market-maker-base>
 
 .. toctree::
     :hidden:
@@ -61,5 +66,5 @@ Installation
     :caption: Participate
 
     Contributing <contributing>
-    Code of Conduct <codeofconduct>
+    Code of Conduct <code-of-conduct>
     License <license>

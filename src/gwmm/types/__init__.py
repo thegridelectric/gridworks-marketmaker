@@ -2,8 +2,8 @@
 
 from gwmm.types.accepted_bid import AcceptedBid
 from gwmm.types.accepted_bid import AcceptedBid_Maker
-from gwmm.types.bid_ack import BidAck
-from gwmm.types.bid_ack import BidAck_Maker
+from gwmm.types.atn_bid import AtnBid
+from gwmm.types.atn_bid import AtnBid_Maker
 from gwmm.types.g_node_gt import GNodeGt
 from gwmm.types.g_node_gt import GNodeGt_Maker
 from gwmm.types.heartbeat_a import HeartbeatA
@@ -37,14 +37,14 @@ __all__ = [
     "PriceQuantityUnitless_Maker",
     "LatestPrice",
     "LatestPrice_Maker",
-    "BidAck",
-    "BidAck_Maker",
     "MarketTypeGt",
     "MarketTypeGt_Maker",
     "SimTimestep",
     "SimTimestep_Maker",
     "MarketPrice",
     "MarketPrice_Maker",
+    "AtnBid",
+    "AtnBid_Maker",
     "MarketMakerInfo",
     "MarketMakerInfo_Maker",
     "AcceptedBid",

@@ -1,0 +1,178 @@
+{
+  "gwapi": "001",
+  "type_name": "atn.bid",
+  "version": "001",
+  "owner": "gridworks@gridworks-consulting.com",
+  "description": "AtomicTNode bid sent to a MarketMaker",
+  "url": "https://gridworks.readthedocs.io/en/latest/market-bid.html",
+  "formats": {
+    "UuidCanonicalTextual": {
+      "type": "string",
+      "description": "A string of hex words separated by hyphens of length 8-4-4-4-12.",
+      "example": "652ba6b0-c3bf-4f06-8a80-6b9832d60a25"
+    },
+    "LeftRightDot": {
+      "type": "string",
+      "description": "Lowercase alphanumeric words separated by periods, most significant word (on the left) starting with an alphabet character.",
+      "example": "dw1.isone.me.freedom.apple"
+    },
+    "MarketSlotNameLrdFormat": {
+      "type": "string",
+      "description": "",
+      "example": ""
+    },
+    "AlgoAddressStringFormat": {
+      "type": "string",
+      "description": "String of length 32, characters are all base32 digits.",
+      "example": "RNMHG32VTIHTC7W3LZOEPTDGREL5IQGK46HKD3KBLZHYQUCAKLMT4G5ALI"
+    }
+  },
+  "enums": {
+    "MarketPriceUnit000": {
+      "type": "string",
+      "name": "market.price.unit.000",
+      "description": "Price unit assigned to MarketMaker MarketType",
+      "oneOf": [
+        {
+          "const": "00000000",
+          "title": "USDPerMWh",
+          "description": ""
+        }
+      ]
+    },
+    "MarketTypeName000": {
+      "type": "string",
+      "name": "market.type.name.000",
+      "description": "Categorizes different markets run by MarketMaker",
+      "oneOf": [
+        {
+          "const": "00000000",
+          "title": "unknown",
+          "description": "Default unknown"
+        },
+        {
+          "const": "d20b81e4",
+          "title": "rt5gate5",
+          "description": "Real-time energy, 5 minute MarketSlots, gate closing 5 minutes prior to start"
+        },
+        {
+          "const": "b36cbfb4",
+          "title": "rt60gate5",
+          "description": "Real-time energy, 60 minute MarketSlots, gate closing 5 minutes prior to start"
+        },
+        {
+          "const": "94a3fe9b",
+          "title": "da60",
+          "description": "Day-ahead energy, 60 minute MarketSlots"
+        },
+        {
+          "const": "5f335bdb",
+          "title": "rt60gate30",
+          "description": "Real-time energy, 60 minute MarketSlots, gate closing 30 minutes prior to start"
+        },
+        {
+          "const": "01a84101",
+          "title": "rt15gate5",
+          "description": "Real-time energy, 15 minute MarketSlots, gate closing 5 minutes prior to start"
+        },
+        {
+          "const": "e997ccfb",
+          "title": "rt30gate5",
+          "description": "Real-time energy, 30 minute MarketSlots, gate closing 5 minutes prior to start"
+        },
+        {
+          "const": "618f9c0a",
+          "title": "rt60gate30b",
+          "description": "Real-time energy, 30 minute MarketSlots, gate closing 5 minutes prior to start, QuantityUnit AvgkW"
+        }
+      ]
+    },
+    "MarketQuantityUnit000": {
+      "type": "string",
+      "name": "market.quantity.unit.000",
+      "description": "Quantity unit assigned to MarketMaker MarketType",
+      "oneOf": [
+        {
+          "const": "00000000",
+          "title": "AvgMW",
+          "description": ""
+        },
+        {
+          "const": "c272f3b3",
+          "title": "AvgkW",
+          "description": ""
+        }
+      ]
+    }
+  },
+  "properties": {
+    "BidderAlias": {
+      "type": "string",
+      "format": "LeftRightDot",
+      "title": "",
+      "required": true
+    },
+    "BidderGNodeInstanceId": {
+      "type": "string",
+      "format": "UuidCanonicalTextual",
+      "title": "",
+      "required": true
+    },
+    "MarketSlotName": {
+      "type": "string",
+      "format": "MarketSlotNameLrdFormat",
+      "title": "",
+      "required": true
+    },
+    "PqPairs": {
+      "type": "price.quantity.unitless.000",
+      "title": "Price Quantity Pairs",
+      "description": "The list of Price Quantity Pairs making up the bid. The units are provided by the AtnBid.PriceUnit and AtnBid.QuantityUnit.",
+      "required": true
+    },
+    "InjectionIsPositive": {
+      "type": "boolean",
+      "title": "",
+      "required": true
+    },
+    "PriceUnit": {
+      "type": "string",
+      "format": "MarketPriceUnit000",
+      "title": "",
+      "required": true
+    },
+    "QuantityUnit": {
+      "type": "string",
+      "format": "MarketQuantityUnit000",
+      "title": "",
+      "required": true
+    },
+    "SignedMarketFeeTxn": {
+      "type": "string",
+      "format": "AlgoMsgPackEncoded",
+      "title": "",
+      "required": true
+    },
+    "TypeName": {
+      "type": "string",
+      "value": "atn.bid.001",
+      "title": "The type name"
+    },
+    "Version": {
+      "type": "string",
+      "title": "The type version",
+      "default": "001",
+      "required": true
+    }
+  },
+  "axioms": {
+    "Axiom1": {
+      "title": "PqPairs PriceMax matches MarketType",
+      "description": "There is a GridWorks global list of MarketTypes (a GridWorks type), identified by their MarketTypeNames (a GridWorks enum). The MarketType has a PriceMax, which must be the first price of the first PriceQuantity pair in PqPairs."
+    },
+    "Axiom2": {
+      "title": "",
+      "description": ""
+    }
+  }
+}

@@ -1,4 +1,4 @@
-""" GNode DataClass Definition """
+""" GNode Global DataClass Definition """
 import logging
 from typing import Dict
 from typing import List
@@ -39,11 +39,13 @@ class GNode:
         g_node_registry_addr: str,
         prev_alias: Optional[str] = None,
         gps_point_id: Optional[str] = None,
-        ownership_deed_nft_id: Optional[int] = None,
+        ownership_deed_id: Optional[int] = None,
         ownership_deed_validator_addr: Optional[str] = None,
         owner_addr: Optional[str] = None,
         daemon_addr: Optional[str] = None,
-        trading_rights_nft_id: Optional[int] = None,
+        trading_rights_id: Optional[int] = None,
+        scada_algo_addr: Optional[str] = None,
+        scada_cert_id: Optional[int] = None,
         component_id: Optional[str] = None,
         display_name: Optional[str] = None,
     ):
@@ -51,26 +53,28 @@ class GNode:
         self.alias = alias
         if not isinstance(status, GNodeStatus):
             raise DcError(f"status {status} must be GNodeStatus, got {type(status)}")
-        self.status = status
+        self.status: GNodeStatus = status
         if not isinstance(role, GNodeRole):
             raise DcError(f"role {role} must be  GNodeRole, got {type(role)}")
-        self.role = role
+        self.role: GNodeRole = role
         self.g_node_registry_addr = g_node_registry_addr
         self.prev_alias = prev_alias
         self.gps_point_id = gps_point_id
-        self.ownership_deed_nft_id = ownership_deed_nft_id
+        self.ownership_deed_id = ownership_deed_id
         self.ownership_deed_validator_addr = ownership_deed_validator_addr
         self.owner_addr = owner_addr
         self.daemon_addr = daemon_addr
-        self.trading_rights_nft_id = trading_rights_nft_id
+        self.trading_rights_id = trading_rights_id
+        self.scada_algo_addr = scada_algo_addr
+        self.scada_cert_id = scada_cert_id
         self.component_id = component_id
         self.display_name = display_name
         self.__class__.by_alias[self.alias] = self
 
     def __repr__(self) -> str:
         rs = f"GNode Alias: {self.alias}, Role: {self.role.value}, Status: {self.status.value}"
-        if self.ownership_deed_nft_id and self.role == GNodeRole.TerminalAsset:
-            rs += f", TaDeedIdx: {self.ownership_deed_nft_id}"
+        if self.ownership_deed_id and self.role == GNodeRole.TerminalAsset:
+            rs += f", TaDeedIdx: {self.ownership_deed_id}"
         return rs
 
     def gps_point(self) -> Optional[GpsPoint]:

@@ -4,11 +4,12 @@ import pendulum
 from gridworks.gw_config import AlgoApiSecrets
 from gridworks.gw_config import GNodeSettings
 from gridworks.gw_config import Public
+from gridworks.gw_config import SupervisorSettings
 from pydantic import BaseSettings
 from pydantic import SecretStr
 
 
-class Settings(GNodeSettings):
+class MarketMakerSettings(GNodeSettings):
     g_node_alias: str = "d1.isone.ver.keene"
     g_node_role_value: str = "MarketMaker"
     my_super_alias: str = "d1.super3"

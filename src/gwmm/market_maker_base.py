@@ -13,7 +13,7 @@ import requests
 from gridworks.actor_base import ActorBase
 from gridworks.utils import RestfulResponse
 
-from gwmm.config import Settings
+from gwmm.config import MarketMakerSettings
 from gwmm.enums import GNodeRole
 from gwmm.enums import MessageCategorySymbol
 from gwmm.enums import UniverseType
@@ -34,7 +34,7 @@ LOGGER.setLevel(logging.INFO)
 
 
 class MarketMakerBase(ActorBase):
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: MarketMakerSettings):
         super().__init__(settings=settings)
         self.settings: Settings = settings
         self.initialize_time()
