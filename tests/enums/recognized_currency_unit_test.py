@@ -3,7 +3,6 @@ from gwmm.enums import RecognizedCurrencyUnit
 
 
 def test_recognized_currency_unit() -> None:
-
     assert set(RecognizedCurrencyUnit.values()) == {
         "UNKNOWN",
         "USD",

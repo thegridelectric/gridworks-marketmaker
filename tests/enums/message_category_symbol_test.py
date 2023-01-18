@@ -3,7 +3,6 @@ from gwmm.enums import MessageCategorySymbol
 
 
 def test_message_category_symbol() -> None:
-
     assert set(MessageCategorySymbol.values()) == {
         "unknown",
         "rj",

@@ -2,14 +2,15 @@ import time
 from typing import Callable
 from typing import Optional
 
-from gwmm.actor_base import ActorBase
-from gwmm.actor_base import OnSendMessageDiagnostic
+from gridworks.actor_base import ActorBase
+from gridworks.actor_base import OnSendMessageDiagnostic
+
 from gwmm.config import Settings
 from gwmm.enums import GNodeRole
 from gwmm.market_maker_base import MarketMakerBase
-from gwmm.schemata import AtnBid
-from gwmm.schemata import HeartbeatA
-from gwmm.schemata import HeartbeatA_Maker
+from gwmm.types import AtnBid
+from gwmm.types import HeartbeatA
+from gwmm.types import HeartbeatA_Maker
 
 
 def wait_for(

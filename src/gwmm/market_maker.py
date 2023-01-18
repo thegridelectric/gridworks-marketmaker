@@ -10,13 +10,14 @@ from typing import Dict
 from typing import List
 
 import dotenv
+import gridworks.algo_utils as algo_utils
+import gridworks.utils as utils
 import pendulum
 import requests
+from gridworks.algo_utils import BasicAccount
+from gridworks.utils import RestfulResponse
 
-import gwmm.algo_utils as algo_utils
 import gwmm.config as config
-import gwmm.utils as utils
-from gwmm.algo_utils import BasicAccount
 from gwmm.data_classes.market_type import Rt60Gate30B
 from gwmm.enums import GNodeRole
 from gwmm.enums import MarketPriceUnit
@@ -24,19 +25,18 @@ from gwmm.enums import MarketTypeName
 from gwmm.enums import MessageCategory
 from gwmm.enums import UniverseType
 from gwmm.market_maker_base import MarketMakerBase
-from gwmm.schemata import AtnBid
-from gwmm.schemata import LatestPrice_Maker
-from gwmm.schemata import MarketBook
-from gwmm.schemata import MarketMakerInfo_Maker
-from gwmm.schemata import MarketPrice
-from gwmm.schemata import MarketSlot
-from gwmm.schemata import MarketSlot_Maker
-from gwmm.schemata import MarketTypeGt
-from gwmm.schemata import MarketTypeGt_Maker
-from gwmm.schemata import Ready_Maker
-from gwmm.schemata import SimTimestep
-from gwmm.schemata.price_quantity_unitless import PriceQuantityUnitless
-from gwmm.utils import RestfulResponse
+from gwmm.types import AtnBid
+from gwmm.types import LatestPrice_Maker
+from gwmm.types import MarketBook
+from gwmm.types import MarketMakerInfo_Maker
+from gwmm.types import MarketPrice
+from gwmm.types import MarketSlot
+from gwmm.types import MarketSlot_Maker
+from gwmm.types import MarketTypeGt
+from gwmm.types import MarketTypeGt_Maker
+from gwmm.types import Ready_Maker
+from gwmm.types import SimTimestep
+from gwmm.types.price_quantity_unitless import PriceQuantityUnitless
 
 
 LOG_FORMAT = (
@@ -53,7 +53,6 @@ class MarketMaker(MarketMakerBase):
         self,
         settings: config.Settings = config.Settings(_env_file=dotenv.find_dotenv()),
     ):
-
         super().__init__(settings=settings)
         self.universe_type = UniverseType(self.settings.universe_type_value)
         self.acct: BasicAccount = BasicAccount(self.settings.sk.get_secret_value())

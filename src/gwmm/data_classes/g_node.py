@@ -4,10 +4,11 @@ from typing import Dict
 from typing import List
 from typing import Optional
 
+from gridworks.errors import DcError
+
 from gwmm.data_classes.gps_point import GpsPoint
 from gwmm.enums import GNodeRole
 from gwmm.enums import GNodeStatus
-from gwmm.errors import DcError
 
 
 LOG_FORMAT = (

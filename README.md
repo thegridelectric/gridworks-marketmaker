@@ -1,6 +1,26 @@
 # Gridworks Marketmaker
 
-## QuickStart
+This is the [GridWorks](https://gridworks.readthedocs.io/) Python SDK for building 
+[MarketMaker Actors](https://gridworks.readthedocs.io/en/latest/market-maker.html). They run markets for the electric
+grid (energy and other) in GridWorks. They are geared to serve millions of coordinated and intelligent 
+[Transactive Devices](https://gridworks.readthedocs.io/en/latest/transactive-device.html), represented in their
+markets by [AtomicTNodes](https://gridworks.readthedocs.io/en/latest/atomic-t-node.html). The veracity of the
+ex-poste energy and power data provided by AtomicTNodes to the MarketMaker is backed up via a series of GridWorks Certificates 
+globally visible on the Algorand blockchain.  These include the foundational 
+[TaDeeds](https://gridworks.readthedocs.io/en/latest/ta-deed.html) that establish ownership of the underlying
+transactive device, and Scada Certificate establishing the credentials of the code running locally on or attached to
+the transcactive device, and the  TaTradingrights](https://gridworks.readthedocs.io/en/latest/ta-trading-rights.html) that
+give the AtomicTNode authority to represent the Transactive Device in markets. 
+
+To learn about using gridworks-marketmaker as an SDK visit the [Gridworks MarketMaker docs](https://gridworks-marketmaker.readthedocs.io/en/latest/).  To explore the rest of GridWorks, visit the [GridWorks docs](https://gridworks.readthedocs.io/en/latest/).
+
+
+
+## Millinocket MarketMaker directions
+
+These are directions for running this code as the MarketMaker in the [Millinocket tutorial](https://gridworks.readthedocs.io/en/latest/millinocket-tutorial.html). 
+These directions assume you have **already started docker sandbox and the GridWorks dev rabbit broker**, as described
+in the [Demo prep](https://gridworks.readthedocs.io/en/latest/millinocket-tutorial.html#demo-prep)
 
 1. Clone this repo
 

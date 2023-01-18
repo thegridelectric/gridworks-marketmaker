@@ -3,7 +3,6 @@ from gwmm.enums import MarketQuantityUnit
 
 
 def test_market_quantity_unit() -> None:
-
     assert set(MarketQuantityUnit.values()) == {
         "AvgMW",
         "AvgkW",

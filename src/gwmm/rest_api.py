@@ -6,13 +6,12 @@ from typing import List
 
 import dotenv
 import pendulum
-
-# app_cache.py
 from aiocache import Cache
 from fastapi import FastAPI
 from fastapi import HTTPException
 from fastapi import status
 from fastapi.responses import FileResponse
+from gridworks.utils import RestfulResponse
 from pydantic import BaseModel
 from pydantic import ValidationError
 
@@ -20,11 +19,10 @@ import gwmm.config as config
 from gwmm.enums import UniverseType
 from gwmm.market_maker import MarketMaker
 from gwmm.market_maker_api import MarketMakerApi
-from gwmm.schemata import AtnBid
-from gwmm.schemata import AtnBid_Maker
-from gwmm.schemata import MarketMakerInfo
-from gwmm.schemata import SimTimestep
-from gwmm.utils import RestfulResponse
+from gwmm.types import AtnBid
+from gwmm.types import AtnBid_Maker
+from gwmm.types import MarketMakerInfo
+from gwmm.types import SimTimestep
 
 
 settings: config.Settings = config.Settings(_env_file=dotenv.find_dotenv())
@@ -32,7 +30,7 @@ settings: config.Settings = config.Settings(_env_file=dotenv.find_dotenv())
 app = FastAPI()
 cache = Cache(
     Cache.REDIS,
-    endpoint=f"{settings.public.redis_endpoint}",
+    endpoint=f"{settings.redis_endpoint}",
     port=6379,
     namespace="main",
 )

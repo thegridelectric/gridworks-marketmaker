@@ -4,12 +4,12 @@ import traceback
 from typing import Optional
 
 import pendulum
+from gridworks.actor_base import ActorBase
 
-from gwmm.actor_base import ActorBase
 from gwmm.config import SupervisorSettings
 from gwmm.enums import GNodeRole
-from gwmm.schemata import HeartbeatA
-from gwmm.schemata import HeartbeatA_Maker
+from gwmm.types import HeartbeatA
+from gwmm.types import HeartbeatA_Maker
 
 
 LOG_FORMAT = (

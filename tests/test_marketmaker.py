@@ -2,7 +2,7 @@ import time
 
 import gwmm.config as config
 from gwmm.market_maker_base import MarketMakerBase
-from gwmm.schemata import HeartbeatA_Maker
+from gwmm.types import HeartbeatA_Maker
 from tests.utils import MarketMakerStubRecorder
 from tests.utils import SupervisorStubRecorder
 from tests.utils import wait_for

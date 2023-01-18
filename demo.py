@@ -1,5 +1,7 @@
 import logging
 
+import gridworks.dev_utils.algo_setup as algo_setup
+
 from gwmm.market_maker import MarketMaker
 
 
@@ -10,4 +12,5 @@ logging.getLogger().addHandler(screen_handler)
 
 
 mm = MarketMaker()
+algo_setup.dev_fund_to_min(addr=mm.acct.addr, min_algos=3)
 mm.start()

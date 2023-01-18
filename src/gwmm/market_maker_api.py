@@ -6,24 +6,23 @@ from typing import Dict
 from typing import List
 
 import dotenv
-import paho.mqtt.client as mqtt
+import gridworks.utils as utils
 import pendulum
+from gridworks.utils import RestfulResponse
 
 import gwmm.config as config
-import gwmm.utils as utils
 from gwmm.data_classes.market_type import Rt60Gate30B
 from gwmm.enums import MarketPriceUnit
 from gwmm.enums import UniverseType
-from gwmm.schemata import AcceptedBid
-from gwmm.schemata import AcceptedBid_Maker
-from gwmm.schemata import AtnBid
-from gwmm.schemata import MarketMakerInfo_Maker
-from gwmm.schemata import MarketPrice
-from gwmm.schemata import MarketSlot
-from gwmm.schemata import MarketTypeGt
-from gwmm.schemata import MarketTypeGt_Maker
-from gwmm.schemata.price_quantity_unitless import PriceQuantityUnitless
-from gwmm.utils import RestfulResponse
+from gwmm.types import AcceptedBid
+from gwmm.types import AcceptedBid_Maker
+from gwmm.types import AtnBid
+from gwmm.types import MarketMakerInfo_Maker
+from gwmm.types import MarketPrice
+from gwmm.types import MarketSlot
+from gwmm.types import MarketTypeGt
+from gwmm.types import MarketTypeGt_Maker
+from gwmm.types.price_quantity_unitless import PriceQuantityUnitless
 
 
 class MarketMakerApi:
@@ -40,20 +39,14 @@ class MarketMakerApi:
         # sample_market = self.market_types[0]
         # sample_market_name = f"{sample_market.Name}.{self.alias}"
         # sample_market_slot_name = f"{sample_market_name}.1577836800"
-        sample_market_name = 'rt60gate30b.d1.isone.ver.keene'
-        sample_market_slot_name = 'rt60gate30b.d1.isone.ver.keene.1577836800'
+        sample_market_name = "rt60gate30b.d1.isone.ver.keene"
+        sample_market_slot_name = "rt60gate30b.d1.isone.ver.keene.1577836800"
         self.info = MarketMakerInfo_Maker(
             g_node_alias=self.alias,
             market_type_list=self.market_types,
             sample_market_name=sample_market_name,
             sample_market_slot_name=sample_market_slot_name,
         ).tuple
-        self.mqtt_client_id = "-".join(str(uuid.uuid4()).split("-")[:-1])
-        self.mqtt_client = mqtt.Client(self.mqtt_client_id)
-        self.mqtt_client.username_pw_set(
-            username=self.settings.rabbit.username,
-            password=self.settings.rabbit.password.get_secret_value(),
-        )
 
     def check_market_creds(self, payload: AtnBid) -> RestfulResponse:
         """
@@ -153,15 +146,7 @@ class MarketMakerApi:
         # self.slot_books[slot.Type.Name][slot.StartUnixS].Bids.append(rb)
         ts_str = pendulum.from_timestamp(ts).to_iso8601_string()
         gc_str = pendulum.from_timestamp(gate_closing).to_iso8601_string()
-        # self.mqtt_client.connect(self.settings.rabbit.host, port=self.settings.rabbit.mqtt_port)
-        # self.mqtt_client.loop_start()
-        # time.sleep(2)
-        # lrh_alias = self.alias.replace(".","-")
-        # lrh_type_name = AcceptedBid_Maker.type_name.replace(".","-")
-        # topic = f"mq/{lrh_alias}/{lrh_type_name}"
-        # self.mqtt_client.publish(topic, accepted_bid.as_type())
-        # self.mqtt_client.disconnect()
-        # self.mqtt_client.loop_stop()
+
         return RestfulResponse(
             Note=f"Contract live. Received time {ts_str}, Gate closing {gc_str}",
             PayloadTypeName="accepted.bid",

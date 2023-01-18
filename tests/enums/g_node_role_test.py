@@ -3,16 +3,16 @@ from gwmm.enums import GNodeRole
 
 
 def test_g_node_role() -> None:
-
     assert set(GNodeRole.values()) == {
-        "Unknown",
+        "GNode",
         "TerminalAsset",
         "Scada",
         "PriceService",
         "WeatherService",
-        "AtomicMeteringNode",
+        "AggregatedTNode",
         "AtomicTNode",
         "MarketMaker",
+        "AtomicMeteringNode",
         "ConductorTopologyNode",
         "InterconnectionComponent",
         "World",
@@ -20,4 +20,4 @@ def test_g_node_role() -> None:
         "Supervisor",
     }
 
-    assert GNodeRole.default() == GNodeRole.Unknown
+    assert GNodeRole.default() == GNodeRole.GNode

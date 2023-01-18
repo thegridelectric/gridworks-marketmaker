@@ -3,7 +3,6 @@ from gwmm.enums import MarketTypeName
 
 
 def test_market_type_name() -> None:
-
     assert set(MarketTypeName.values()) == {
         "unknown",
         "rt5gate5",

@@ -10,18 +10,18 @@ from typing import no_type_check
 
 import pendulum
 import requests
+from gridworks.actor_base import ActorBase
+from gridworks.utils import RestfulResponse
 
-from gwmm.actor_base import ActorBase
 from gwmm.config import Settings
 from gwmm.enums import GNodeRole
 from gwmm.enums import MessageCategorySymbol
 from gwmm.enums import UniverseType
-from gwmm.schemata import HeartbeatA
-from gwmm.schemata import HeartbeatA_Maker
-from gwmm.schemata import LatestPrice_Maker
-from gwmm.schemata import SimTimestep
-from gwmm.schemata import SimTimestep_Maker
-from gwmm.utils import RestfulResponse
+from gwmm.types import HeartbeatA
+from gwmm.types import HeartbeatA_Maker
+from gwmm.types import LatestPrice_Maker
+from gwmm.types import SimTimestep
+from gwmm.types import SimTimestep_Maker
 
 
 LOG_FORMAT = (
@@ -48,7 +48,7 @@ class MarketMakerBase(ActorBase):
             timestep_created_ms=int(time.time() * 1000),
             message_id="00000000-0000-0000-0000-000000000000",
         ).tuple
-        api_endpoint = f"{self.settings.public.mm_api_root}/sim-timestep/"
+        api_endpoint = f"{self.settings.mm_api_root}/sim-timestep/"
         r = requests.post(url=api_endpoint, json=ts.as_dict())
         if r.status_code > 200:
             raise Exception("Failed to initialize time with RestAPI. Check uvicorn?")
@@ -86,12 +86,12 @@ class MarketMakerBase(ActorBase):
 
     def timestep_from_timecoordinator(self, payload: SimTimestep):
         if self._time < payload.TimeUnixS:
-            api_endpoint = f"{self.settings.public.mm_api_root}/sim-timestep/"
+            api_endpoint = f"{self.settings.mm_api_root}/sim-timestep/"
             r = requests.post(url=api_endpoint, json=payload.as_dict())
             self._time = float(payload.TimeUnixS)
             self.new_timestep(payload)
         elif self._time == float(payload.TimeUnixS):
-            api_endpoint = f"{self.settings.public.mm_api_root}/sim-timestep/"
+            api_endpoint = f"{self.settings.mm_api_root}/sim-timestep/"
             r = requests.post(url=api_endpoint, json=payload.as_dict())
             self.repeated_timestep(payload)
 

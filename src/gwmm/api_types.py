@@ -3,21 +3,20 @@ from typing import Dict
 from typing import List
 from typing import no_type_check
 
-from gwmm.schemata import AcceptedBid_Maker
-from gwmm.schemata import AtnBid_Maker
-from gwmm.schemata import BidAck_Maker
-from gwmm.schemata import GnodeGt_Maker
-from gwmm.schemata import HeartbeatA_Maker
-from gwmm.schemata import LatestPrice_Maker
-from gwmm.schemata import MarketBook_Maker
-from gwmm.schemata import MarketMakerInfo_Maker
-from gwmm.schemata import MarketPrice_Maker
-from gwmm.schemata import MarketSlot_Maker
-from gwmm.schemata import MarketTypeGt_Maker
-from gwmm.schemata import PriceQuantity_Maker
-from gwmm.schemata import PriceQuantityUnitless_Maker
-from gwmm.schemata import Ready_Maker
-from gwmm.schemata import SimTimestep_Maker
+from gwmm.types import AcceptedBid_Maker
+from gwmm.types import BidAck_Maker
+from gwmm.types import GNodeGt_Maker
+from gwmm.types import HeartbeatA_Maker
+from gwmm.types import LatestPrice_Maker
+from gwmm.types import MarketBook_Maker
+from gwmm.types import MarketMakerInfo_Maker
+from gwmm.types import MarketPrice_Maker
+from gwmm.types import MarketSlot_Maker
+from gwmm.types import MarketTypeGt_Maker
+from gwmm.types import PriceQuantity_Maker
+from gwmm.types import PriceQuantityUnitless_Maker
+from gwmm.types import Ready_Maker
+from gwmm.types import SimTimestep_Maker
 
 
 TypeMakerByName: Dict[str, HeartbeatA_Maker] = {}
@@ -27,9 +26,8 @@ TypeMakerByName: Dict[str, HeartbeatA_Maker] = {}
 def type_makers() -> List[HeartbeatA_Maker]:
     return [
         AcceptedBid_Maker,
-        AtnBid_Maker,
         BidAck_Maker,
-        GnodeGt_Maker,
+        GNodeGt_Maker,
         HeartbeatA_Maker,
         LatestPrice_Maker,
         MarketBook_Maker,
@@ -56,10 +54,9 @@ def version_by_type_name() -> Dict[str, str]:
 
     v: Dict[str, str] = {
         "accepted.bid": "000",
-        "atn.bid": "000",
         "bid.ack": "000",
-        "gnode.gt": "000",
-        "heartbeat.a": "000",
+        "g.node.gt": "002",
+        "heartbeat.a": "100",
         "latest.price": "000",
         "market.book": "000",
         "market.maker.info": "000",
@@ -83,10 +80,9 @@ def status_by_versioned_type_name() -> Dict[str, str]:
 
     v: Dict[str, str] = {
         "accepted.bid.000": "Pending",
-        "atn.bid.000": "Pending",
         "bid.ack.000": "Pending",
-        "gnode.gt.000": "Pending",
-        "heartbeat.a.000": "Pending",
+        "g.node.gt.002": "Pending",
+        "heartbeat.a.100": "Pending",
         "latest.price.000": "Pending",
         "market.book.000": "Pending",
         "market.maker.info.000": "Pending",
