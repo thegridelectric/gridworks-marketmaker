@@ -4,9 +4,9 @@ from typing import Optional
 
 from gridworks.actor_base import ActorBase
 from gridworks.actor_base import OnSendMessageDiagnostic
+from gridworks.gw_config import SupervisorSettings
 
 from gwmm.config import MarketMakerSettings
-from gwmm.config import SupervisorSettings
 from gwmm.enums import GNodeRole
 from gwmm.market_maker_base import MarketMakerBase
 from gwmm.types import AtnBid
@@ -93,6 +93,7 @@ class SupervisorStubRecorder(ActorBase):
 
 class MarketMakerStubRecorder(MarketMakerBase):
     """MarketMakerBase for use in testing."""
+
     messages_received: int
     messages_routed_internally: int
     latest_from_role: Optional[str]
