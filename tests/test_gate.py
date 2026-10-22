@@ -34,34 +34,36 @@ def test_slot_arithmetic() -> None:
     assert next_slot_start(HOUR) == HOUR + SLOT_S
 
 
-def test_first_tick_publishes_the_open_slot() -> None:
+def test_boot_mid_slot_publishes_nothing() -> None:
     r = Recorder()
     g = r.gate()
     g.tick(HOUR + 600)
-    assert r.fetches == 1
-    assert [p.slot_start_s for p in r.published] == [HOUR]
+    assert r.fetches == 0
+    assert r.published == []
     assert r.glitches == []
 
 
 def test_fetch_before_the_hour_then_publish_at_it() -> None:
     r = Recorder()
     g = r.gate(lead_s=20)
-    g.tick(HOUR + 600)  # boot publish
+    g.tick(HOUR + 600)  # boot: nothing
     g.tick(HOUR + SLOT_S - 30)  # before the lead window: nothing
-    assert r.fetches == 1
+    assert r.fetches == 0
     g.tick(HOUR + SLOT_S - 20)  # lead window opens: fetch once
     g.tick(HOUR + SLOT_S - 10)
-    assert r.fetches == 2
-    assert len(r.published) == 1
+    assert r.fetches == 1
+    assert r.published == []
     g.tick(HOUR + SLOT_S)  # top of the hour: publish
-    assert [p.slot_start_s for p in r.published] == [HOUR, HOUR + SLOT_S]
+    assert [p.slot_start_s for p in r.published] == [HOUR + SLOT_S]
     g.tick(HOUR + SLOT_S + 1)  # once per slot
-    assert len(r.published) == 2
+    assert len(r.published) == 1
 
 
 def test_energy_is_lmp_plus_delivery() -> None:
     r = Recorder(lmp=30.0)
     g = r.gate()
+    g.tick(HOUR - 600)  # boot
+    g.tick(HOUR - 20)
     g.tick(HOUR)
     p = r.published[0]
     assert p.lmp_usd_per_mwh == 30.0
@@ -71,6 +73,8 @@ def test_energy_is_lmp_plus_delivery() -> None:
 def test_failed_fetch_publishes_last_price_and_glitches() -> None:
     r = Recorder(lmp=30.0)
     g = r.gate()
+    g.tick(HOUR - 600)  # boot
+    g.tick(HOUR - 20)
     g.tick(HOUR)
     r.lmp = None
     g.tick(HOUR + SLOT_S - 20)
@@ -85,6 +89,8 @@ def test_failed_fetch_publishes_last_price_and_glitches() -> None:
 def test_cold_failure_publishes_nothing_and_glitches() -> None:
     r = Recorder(lmp=None)
     g = r.gate()
+    g.tick(HOUR - 600)  # boot
+    g.tick(HOUR - 20)
     g.tick(HOUR)
     assert r.published == []
     assert [s for s, _ in r.glitches] == ["no price to publish"]

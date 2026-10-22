@@ -6,7 +6,9 @@ them in as callables.
 
 Each slot is one hour on the wall clock. A few seconds before the slot
 opens the gate fetches the current 5-minute LMP; at the top of the hour
-it publishes the energy price for the slot. When the fetch for a slot
+it publishes the energy price for the slot. A maker that boots mid-slot
+publishes nothing for that slot: an LTN clears against a price only at
+the top of the hour, when its bid is in. When the fetch for a slot
 failed, the gate publishes the last price it published and raises a
 critical glitch, so the houses still clear and someone is paged. With no
 price ever published it can only raise the glitch.
@@ -72,12 +74,11 @@ class SlotGate:
         if now_s >= upcoming - self.fetch_lead_s and self.fetched_slot != upcoming:
             self.fetch_for(upcoming)
         current = slot_start(now_s)
-        if self.published_slot != current and self.published_slot is not None:
-            self.publish_for(current)
-        elif self.published_slot is None:
-            # First tick after boot: publish for the open slot at once, so a
-            # restart mid-hour does not leave the houses without a price.
-            self.fetch_for(current)
+        if self.published_slot is None:
+            # Boot: the open slot is already cleared or missed; the first
+            # publish is the next top of the hour.
+            self.published_slot = current
+        elif self.published_slot != current:
             self.publish_for(current)
 
     def fetch_for(self, slot_start_s: int) -> None:
