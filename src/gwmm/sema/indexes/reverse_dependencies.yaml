@@ -1,0 +1,30 @@
+# GENERATED FILE - DO NOT EDIT
+# Generated from definitions/registry.yaml
+
+types: {}
+enums:
+  log.level:
+    '000':
+      used_by:
+      - glitch:000
+  market.price.unit:
+    '000':
+      used_by:
+      - latest.price:000
+formats:
+  left.right.dot:
+    used_by:
+    - glitch:000
+    - latest.price:000
+  market.slot.name:
+    used_by:
+    - latest.price:000
+  spaceheat.name:
+    used_by:
+    - glitch:000
+  utc.milliseconds:
+    used_by:
+    - glitch:000
+  uuid4.str:
+    used_by:
+    - latest.price:000

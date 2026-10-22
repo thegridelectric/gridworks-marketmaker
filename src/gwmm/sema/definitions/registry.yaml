@@ -1,0 +1,100 @@
+metadata:
+  registry_version: "1.0"
+  last_updated: "2026-10-21T18:25:00Z"
+  maintainer: "gridworks-energy"
+
+formats:
+  left.right.dot:
+    owner: gridworks-energy
+    schema_url: "https://schemas.electricity.works/formats/left.right.dot"
+    created: "2022-01-01T00:00:00Z"
+    status: "published"
+    description: "Dot-separated hierarchical identifier composed of lowercase alphanumeric segments"
+
+  market.slot.name:
+    owner: gridworks-energy
+    schema_url: "https://schemas.electricity.works/formats/market.slot.name"
+    created: "2024-12-05T19:25:00Z"
+    status: "published"
+    description: "Dot-separated identifier for a specific market slot: commodity class, a market-product name token, the market-maker alias, and a 10-digit Unix slot-start timestamp"
+
+  spaceheat.name:
+    owner: gridworks-energy
+    schema_url: "https://schemas.electricity.works/formats/spaceheat.name"
+    created: "2024-09-02T15:00:00Z"
+    status: "published"
+    description: "Single-segment lowercase identifier with optional internal hyphen-separated words"
+
+  utc.milliseconds:
+    owner: gridworks-energy
+    schema_url: "https://schemas.electricity.works/formats/utc.milliseconds"
+    created: "2024-09-02T15:00:00Z"
+    status: "published"
+    description: "UTC timestamp in whole milliseconds since Unix epoch (2000–3000 range)"
+
+  uuid4.str:
+    owner: gridworks-energy
+    schema_url: "https://schemas.electricity.works/formats/uuid4.str"
+    created: "2024-09-02T15:00:00Z"
+    status: "published"
+    description: "Canonical lowercase UUIDv4 string (RFC 4122) in 8-4-4-4-12 format"
+
+enums:
+  log.level:
+    owner: gridworks-energy
+    enum_type: "literal"
+    description: "Logging level."
+    schema_url: "https://schemas.electricity.works/enums/log.level/000"
+    created: "2026-05-13T00:00:00Z"
+    status: "published"
+
+  market.price.unit:
+    latest_version: "000"
+    owner: gridworks-energy
+    enum_type: "versioned"
+    description: "Unit of the price axis for a market type."
+
+    versions:
+      "000":
+        schema_url: "https://schemas.electricity.works/enums/market.price.unit/000"
+        created: "2024-12-05T19:25:00Z"
+        status: "published"
+
+types:
+  glitch:
+    latest_version: "000"
+    owner: gridworks-energy
+    versioning_strategy: "literal"
+    description: "Report of an unexpected system event with logging level, source node, and detail."
+
+    versions:
+      "000":
+        schema_url: "https://schemas.electricity.works/types/glitch/000"
+        created: "2026-05-13T00:00:00Z"
+        status: "published"
+        summary: "Initial Sema version"
+        direct_dependencies:
+          structural:
+            - "left.right.dot"
+            - "log.level:000"
+            - "spaceheat.name"
+            - "utc.milliseconds"
+
+  latest.price:
+    latest_version: "000"
+    owner: gridworks-energy
+    versioning_strategy: "literal"
+    description: "Latest cleared market price for a market slot, published by the MarketMaker (currently by the LeafTransactiveNode, pre-MarketMaker)."
+
+    versions:
+      "000":
+        schema_url: "https://schemas.electricity.works/types/latest.price/000"
+        created: "2026-05-13T00:00:00Z"
+        status: "published"
+        summary: "Initial Sema version"
+        direct_dependencies:
+          structural:
+            - "left.right.dot"
+            - "market.price.unit:000"
+            - "market.slot.name"
+            - "uuid4.str"

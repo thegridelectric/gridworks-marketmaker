@@ -1,0 +1,9 @@
+{
+  "TypeName": "g.node.gt",
+  "Version": "006",
+  "GNodeId": "7f1c4d2e-9a3b-4c5d-8e6f-0a1b2c3d4e5f",
+  "Alias": "d1.isone.me.versant.keene",
+  "BaseClass": "MarketMaker",
+  "GNodeClass": "MarketMaker",
+  "Status": "Pending"
+}

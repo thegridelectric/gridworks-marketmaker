@@ -1,0 +1,36 @@
+# GENERATED FILE - DO NOT EDIT
+# Generated from definitions/registry.yaml
+#
+# ------------------------------------------------------------------
+# LOCAL LOOKUP (NON-AUTHORITATIVE)
+#
+# This file provides local resolution from Sema vocabulary words
+# to schema files within this snapshot.
+# ------------------------------------------------------------------
+
+types:
+  glitch:
+    latest_version: '000'
+    versioning_strategy: literal
+    versions:
+      '000': definitions/types/glitch/000.yaml
+  latest.price:
+    latest_version: '000'
+    versioning_strategy: literal
+    versions:
+      '000': definitions/types/latest.price/000.yaml
+enums:
+  log.level:
+    enum_type: literal
+    schema: definitions/enums/log.level/000.yaml
+  market.price.unit:
+    enum_type: versioned
+    latest_version: '000'
+    versions:
+      '000': definitions/enums/market.price.unit/000.yaml
+formats:
+  left.right.dot: definitions/formats/left.right.dot.yaml
+  market.slot.name: definitions/formats/market.slot.name.yaml
+  spaceheat.name: definitions/formats/spaceheat.name.yaml
+  utc.milliseconds: definitions/formats/utc.milliseconds.yaml
+  uuid4.str: definitions/formats/uuid4.str.yaml

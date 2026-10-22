@@ -1,0 +1,25 @@
+# GENERATED FILE - DO NOT EDIT
+# Generated from definitions/registry.yaml
+
+types:
+  glitch:
+    '000':
+      enums:
+      - log.level:000
+      formats:
+      - left.right.dot
+      - spaceheat.name
+      - utc.milliseconds
+      types: []
+      versionless_types: []
+  latest.price:
+    '000':
+      enums:
+      - market.price.unit:000
+      formats:
+      - left.right.dot
+      - market.slot.name
+      - uuid4.str
+      types: []
+      versionless_types: []
+versionless_types: {}

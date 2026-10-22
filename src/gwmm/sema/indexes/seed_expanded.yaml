@@ -1,0 +1,33 @@
+metadata:
+  generated_from: indexes/public_registry.yaml
+  generated_at: '2026-10-22T14:44:29Z'
+  note: Transitive closure of initial_targets
+initial_targets:
+- latest.price:000
+- glitch:000
+worklist:
+  formats:
+    left.right.dot:
+      path: definitions/formats/left.right.dot.yaml
+    market.slot.name:
+      path: definitions/formats/market.slot.name.yaml
+    spaceheat.name:
+      path: definitions/formats/spaceheat.name.yaml
+    utc.milliseconds:
+      path: definitions/formats/utc.milliseconds.yaml
+    uuid4.str:
+      path: definitions/formats/uuid4.str.yaml
+  enums:
+    log.level:
+      '000':
+        path: definitions/enums/log.level/000.yaml
+    market.price.unit:
+      '000':
+        path: definitions/enums/market.price.unit/000.yaml
+  types:
+    glitch:
+      '000':
+        path: definitions/types/glitch/000.yaml
+    latest.price:
+      '000':
+        path: definitions/types/latest.price/000.yaml

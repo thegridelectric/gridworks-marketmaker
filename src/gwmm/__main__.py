@@ -1,12 +1,6 @@
-"""Command-line interface."""
-import click
+"""`python -m gwmm`, the same as `gwmm rabbit`."""
 
-
-@click.command()
-@click.version_option()
-def main() -> None:
-    """Gridworks Marketmaker."""
-
+from gwmm.cli import main
 
 if __name__ == "__main__":
-    main(prog_name="gridworks-marketmaker")  # pragma: no cover
+    main(["rabbit"])

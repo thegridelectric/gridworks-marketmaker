@@ -1,0 +1,10 @@
+# gwmm convenience aliases: spelling over systemctl/tail, no logic.
+# Sourced from the box login's ~/.bashrc; the sudoers drop-in
+# (/etc/sudoers.d/mm) grants exactly the systemctl invocations below.
+
+alias mmstart='sudo systemctl start mm-rabbit'
+alias mmstop='sudo systemctl stop mm-rabbit'
+alias mmrestart='sudo systemctl restart mm-rabbit'
+alias mmstatus='systemctl status mm-rabbit --no-pager'
+
+alias mmlog='cd "$HOME"/.local/state/gridworks/marketmaker/log && tail -F *.log'

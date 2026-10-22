@@ -1,0 +1,6 @@
+enums:
+  log.level: log.level
+  market.price.unit: market.price.unit
+types:
+  glitch: glitch
+  latest.price: latest.price
