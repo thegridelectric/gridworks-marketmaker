@@ -1,10 +1,17 @@
-#!/bin/bash
-# Run locally everything CI runs, so a push won't go red. Mirrors
-# .github/workflows/tests.yml. Usage: ./ci.sh
+#!/usr/bin/env bash
 #
-# The broker test needs GWMM_TEST_RABBIT_URL (the dev broker's d1__1
-# vhost); it self-skips without one, so set it here to run the full gate.
+# The gate for this repo: the GitHub workflow runs this script and nothing
+# else, so a local pass is a CI pass. Run it before committing.
+#
+# The broker test needs the gwbase dev broker (gw-dev-rabbit, started from
+# gridworks-base with ./arm.sh or ./x86.sh). When one answers on
+# localhost:5672 the script points GWMM_TEST_RABBIT_URL at its d1__1 vhost;
+# without one the test self-skips.
+#
+# Usage: ./ci.sh
 set -euo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")"
 
 step() { printf '\n=== %s ===\n' "$1"; shift; "$@"; }
 
@@ -12,6 +19,12 @@ step "uv sync (locked)" uv sync --all-groups --locked
 step "ruff check" uv run ruff check --no-fix .
 step "ruff format --check" uv run ruff format --check .
 step "pyright" uv run pyright
+
+if nc -z localhost 5672 2>/dev/null; then
+  export GWMM_TEST_RABBIT_URL="${GWMM_TEST_RABBIT_URL:-amqp://smqPublic:smqPublic@localhost:5672/d1__1}"
+else
+  echo "NOTE: no broker on localhost:5672 — the broker test will self-skip."
+fi
 step "tests" uv run pytest -q
 
-printf '\nAll CI checks passed.\n'
+printf '\nAll checks passed.\n'
