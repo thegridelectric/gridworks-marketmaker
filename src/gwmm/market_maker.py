@@ -17,8 +17,9 @@ import uuid
 from collections.abc import Callable
 
 from gwbase.gridworks_actor import GridworksActor
+from gwbase.sema.enums import GwGNodeClass
 from gwbase.sema.types.gridworks_header import GridworksHeader
-from gwbase.transport_encoding import RoutingEnvelope, TransportClass
+from gwbase.transport_encoding import RoutingEnvelope
 
 from gwmm.config import GwmmSettings
 from gwmm.gate import SlotGate, SlotPrice
@@ -46,7 +47,7 @@ class MarketMaker(GridworksActor):
     ) -> None:
         super().__init__(
             settings=settings,
-            transport_class=TransportClass.MarketMaker,
+            g_node_class=GwGNodeClass.MarketMaker,
             my_super_alias=settings.my_super_alias,
             my_time_coordinator_alias=settings.my_time_coordinator_alias,
         )
