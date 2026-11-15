@@ -1,8 +1,8 @@
 # gridworks-marketmaker
 
-The MarketMaker runs one market at one node of the grid and states its price. The market it runs today is the Keene constraint market in ISO New England, where the houses of the fleet buy their heat's electricity hour by hour. At the top of every hour it publishes the cleared price for the hour that just opened: the wholesale price at the market's pricing node in its energy, congestion and loss parts, plus the delivery price the houses' tariff charges for that hour, with the tariff named. The houses' transactive nodes clear their dispatch contracts against that price, and the journal keeps the series as the settled price of the market.
+The MarketMaker runs one market at one node of the grid and states its price. The market it runs today is the Keene constraint market in ISO New England, where the houses of the fleet buy their heat's electricity hour by hour. It states each hour's price twice. At the top of the hour it publishes the Provisional price: the wholesale parts it last published plus the delivery price the houses' tariff charges for this hour, with the tariff named. When ISO-NE posts the hour's first five-minute interval, about 25 s in, it publishes the Final price: that interval's wholesale price in its energy, congestion and loss parts, plus the same delivery. A house acts on the Provisional only toward less consumption, and its dispatch contract binds at the Final. The journal keeps both as the price series of the market.
 
-When the wholesale price cannot be fetched in time, the maker still publishes the hour, at the last wholesale price it published with the hour's own delivery price, and raises a critical fault so a person is paged. A maker that starts partway through an hour publishes nothing for that hour, because a house clears against a price only at the top of the hour, when its bid is in.
+When ISO-NE has not posted the interval 240 s into the hour, the maker publishes the Final at the provisional value and raises a critical fault so a person is paged. The rule of this market is the same when the maker itself is silent: a Provisional with no Final within 240 s is the Final, and the contract binds at it. A maker that starts partway through an hour publishes nothing for that hour, and with nothing published before it has no provisional value for its first hour, so that hour gets a Final alone.
 
 Bids addressed to the maker are received and dropped. The acknowledgement that makes a bid a contract, the market book and the clearing belong to the full maker, which extends this one.
 
@@ -13,11 +13,11 @@ for GridWorks boundaries, canonical at
 [`thegridelectric/sema`](https://github.com/thegridelectric/sema), and
 listed in the seed `src/gwmm/sema_seed_request.yaml`:
 
-- `latest.price`: the cleared price of one slot, named by the market's
-  product, the maker's alias and the slot's start, in its parts under
-  the named tariff.
-- `glitch`: how the maker reports a fault, such as a slot published at
-  a stale wholesale price.
+- `latest.price`: the price of one slot at one stage, Provisional or
+  Final, named by the market's product, the maker's alias and the slot's
+  start, in its parts under the named tariff.
+- `glitch`: how the maker reports a fault, such as a Final published at
+  the provisional value.
 
 Both go out as broadcasts on the maker's own exchange; an MQTT-native
 subscriber hears the price as `rjb/<maker-alias-lrh>/mm/latest-price`.
@@ -44,7 +44,7 @@ begins cold.
 ```
 cp template.env .env     # fill in the broker and the ISO-NE account
 uv sync --all-groups
-uv run gwmm show         # the price the maker would publish for the open slot
+uv run gwmm show         # the open slot's price from ISO-NE's latest interval, with its stage
 uv run gwmm rabbit       # run the maker
 ./ci.sh                  # what CI runs: lint, types, tests
 ```

@@ -13,10 +13,11 @@ types:
       types: []
       versionless_types: []
   latest.price:
-    '001':
+    '002':
       enums:
       - market.price.unit:000
       - price.component.name:000
+      - price.stage:000
       formats:
       - left.right.dot
       - market.slot.name

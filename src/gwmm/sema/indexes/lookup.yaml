@@ -15,10 +15,10 @@ types:
     versions:
       '000': definitions/types/glitch/000.yaml
   latest.price:
-    latest_version: '001'
+    latest_version: '002'
     versioning_strategy: literal
     versions:
-      '001': definitions/types/latest.price/001.yaml
+      '002': definitions/types/latest.price/002.yaml
   price.component:
     latest_version: '000'
     versioning_strategy: literal
@@ -38,6 +38,11 @@ enums:
     latest_version: '000'
     versions:
       '000': definitions/enums/price.component.name/000.yaml
+  price.stage:
+    enum_type: versioned
+    latest_version: '000'
+    versions:
+      '000': definitions/enums/price.stage/000.yaml
 formats:
   left.right.dot: definitions/formats/left.right.dot.yaml
   market.slot.name: definitions/formats/market.slot.name.yaml

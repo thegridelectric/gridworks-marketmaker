@@ -33,7 +33,7 @@ class GwmmSettings(GNodeSettings):
 
     # From the top of the hour the maker asks ISO-NE for its current
     # interval on every tick until it is the slot's own; after
-    # fetch_deadline_s without it the slot is published stale.
+    # fetch_deadline_s without it the Final takes the provisional value.
     fetch_deadline_s: int = 240
 
     # Control-plane participants required by GridworksActor. Placeholders

@@ -11,15 +11,11 @@ types:
         summary: "Initial Sema version"
 
   latest.price:
-    latest_version: "001"
+    latest_version: "002"
     versioning_strategy: "literal"
     versions:
-      "001":
-        summary: >
-          - PriceTimes1000: renamed PriceX1000
-          - Components: add, assigned as one Unknown component with the whole price
-          - TariffAlias: add (optional)
-          - CreatedMs: add (optional)
+      "002":
+        summary: "- PriceStage: add, assigned Final"
 
   price.component:
     latest_version: "000"
@@ -42,6 +38,12 @@ enums:
       "000": {}
 
   price.component.name:
+    enum_type: "versioned"
+    note: "This enum is versioned; new versions are additive only."
+    versions:
+      "000": {}
+
+  price.stage:
     enum_type: "versioned"
     note: "This enum is versioned; new versions are additive only."
     versions:

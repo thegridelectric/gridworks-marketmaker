@@ -22,7 +22,7 @@ from gwmm.config import GwmmSettings
 from gwmm.gate import SLOT_S, FiveMinuteLmp, SlotPrice, WholesaleLmp, slot_start
 from gwmm.market_maker import MarketMaker, market_slot_name, price_components
 from gwmm.sema.codec import default_codec
-from gwmm.sema.enums import PriceComponentName
+from gwmm.sema.enums import PriceComponentName, PriceStage
 from gwmm.sema.types import LatestPrice
 from gwmm.tariff import TARIFF_ALIAS
 
@@ -35,7 +35,9 @@ def test_market_slot_name_is_well_formed() -> None:
 
 
 def test_components_are_the_lmp_parts_and_delivery() -> None:
-    price = SlotPrice(1792335600, WholesaleLmp(32_120, 40, -820), 58_556)
+    price = SlotPrice(
+        1792335600, WholesaleLmp(32_120, 40, -820), 58_556, PriceStage.Final
+    )
     parts = price_components(price)
     assert [c.name for c in parts] == [
         PriceComponentName.WholesaleEnergy,
@@ -87,7 +89,9 @@ def test_publish_is_heard_on_the_mic_exchange() -> None:
             time.sleep(0.1)
         assert maker.consuming
         start = slot_start(int(time.time()))
-        maker.publish_price(SlotPrice(start, WholesaleLmp(30_000, 250, -400), 58_556))
+        maker.publish_price(
+            SlotPrice(start, WholesaleLmp(30_000, 250, -400), 58_556, PriceStage.Final)
+        )
         listener.join(20)
     finally:
         maker.stop()
@@ -101,5 +105,6 @@ def test_publish_is_heard_on_the_mic_exchange() -> None:
     assert word.price_x1000 == 30_000 + 250 - 400 + 58_556
     assert sum(c.price_x1000 for c in word.components) == word.price_x1000
     assert word.tariff_alias == TARIFF_ALIAS
+    assert word.price_stage == PriceStage.Final
     assert word.market_slot_name.endswith(f".{start}")
     assert int(word.market_slot_name.rsplit(".", 1)[1]) % SLOT_S == 0

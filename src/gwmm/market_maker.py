@@ -1,9 +1,10 @@
-"""The MarketMaker actor: states the market's price at the top of every hour.
+"""The MarketMaker actor: states the market's price for every hour, twice.
 
-Each hour the actor publishes one price word for the slot that just
-opened, assembled from the wholesale parts the gate fetched and the
-tariff's delivery price for the hour, and raises a critical fault when
-it had to publish stale. Bids addressed to the maker are received and
+Each hour the actor publishes the slot's Provisional price at the top of
+the hour and its Final price when ISO-NE posts the slot's first
+interval, each assembled from wholesale parts and the tariff's delivery
+price for the hour, and raises a critical fault when the Final had to
+take the provisional value. Bids addressed to the maker are received and
 dropped; the ack that makes a bid a contract is the full maker's job.
 """
 
@@ -54,7 +55,7 @@ def price_components(price: SlotPrice) -> list[PriceComponent]:
 
 
 class MarketMaker(GridworksActor):
-    """Publishes the cleared price for its one market, every hour."""
+    """Publishes the price of its one market, provisional then final, every hour."""
 
     def __init__(
         self,
@@ -121,6 +122,7 @@ class MarketMaker(GridworksActor):
             market_slot_name=market_slot_name(
                 self.market_product, self.alias, price.slot_start_s
             ),
+            price_stage=price.stage,
             components=price_components(price),
             tariff_alias=TARIFF_ALIAS,
             created_ms=int(time.time() * 1000),
@@ -132,8 +134,9 @@ class MarketMaker(GridworksActor):
         envelope = self.broadcast_envelope(type_name=word.type_name)
         self.send(envelope=envelope, body=json.dumps(word.to_dict()).encode("utf-8"))
         self.logger.info(
-            "published %s: lmp %.3f + delivery %.3f = %.3f USD/MWh",
+            "published %s %s: lmp %.3f + delivery %.3f = %.3f USD/MWh",
             word.market_slot_name,
+            price.stage.value,
             price.lmp.total_x1000 / 1000,
             price.delivery_x1000 / 1000,
             price.price_x1000 / 1000,

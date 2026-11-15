@@ -4,10 +4,11 @@
 # (run from the sema repo, by scripts/regen_sema_snapshot.sh). Output
 # appears under sema/output/sema/; the script mirrors it into src/gwmm/sema/.
 #
-# The maker speaks two words: latest.price, the cleared price it
-# publishes for each slot, and glitch, how it reports a fault. The
-# closure pulls market.price.unit, log.level and the formats
-# (market.slot.name, left.right.dot, spaceheat.name, uuid4.str).
+# The maker speaks two words: latest.price, the price it publishes for
+# each slot at each stage, and glitch, how it reports a fault. The
+# closure pulls price.stage, price.component and its name enum,
+# market.price.unit, log.level and the formats (market.slot.name,
+# left.right.dot, spaceheat.name, uuid4.str, utc.milliseconds).
 
 initial_targets:
   types:
