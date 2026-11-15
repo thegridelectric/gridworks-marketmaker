@@ -19,10 +19,12 @@ from gwbase.config.rabbit_settings import RabbitBrokerClient
 from pydantic import SecretStr
 
 from gwmm.config import GwmmSettings
-from gwmm.gate import SLOT_S, SlotPrice, slot_start
-from gwmm.market_maker import MarketMaker, market_slot_name
+from gwmm.gate import SLOT_S, SlotPrice, WholesaleLmp, slot_start
+from gwmm.market_maker import MarketMaker, market_slot_name, price_components
 from gwmm.sema.codec import default_codec
+from gwmm.sema.enums import PriceComponentName
 from gwmm.sema.types import LatestPrice
+from gwmm.tariff import TARIFF_ALIAS
 
 DEV_IDENTITY = Path(__file__).resolve().parents[1] / "scripts" / "dev-g.node.gt.json"
 
@@ -30,6 +32,18 @@ DEV_IDENTITY = Path(__file__).resolve().parents[1] / "scripts" / "dev-g.node.gt.
 def test_market_slot_name_is_well_formed() -> None:
     name = market_slot_name("rt60gate5", "d1.isone.me.versant.keene", 1792335600)
     assert name == "e.rt60gate5.d1.isone.me.versant.keene.1792335600"
+
+
+def test_components_are_the_lmp_parts_and_delivery() -> None:
+    price = SlotPrice(1792335600, WholesaleLmp(32_120, 40, -820), 58_556)
+    parts = price_components(price)
+    assert [c.name for c in parts] == [
+        PriceComponentName.WholesaleEnergy,
+        PriceComponentName.WholesaleCongestion,
+        PriceComponentName.WholesaleLoss,
+        PriceComponentName.Delivery,
+    ]
+    assert sum(c.price_x1000 for c in parts) == price.price_x1000 == 89_896
 
 
 @pytest.mark.integration
@@ -63,7 +77,7 @@ def test_publish_is_heard_on_the_mic_exchange() -> None:
     listener.start()
     assert ready.wait(10)
 
-    maker = MarketMaker(settings, fetch_lmp=lambda: 30.0)
+    maker = MarketMaker(settings, fetch_lmp=lambda: WholesaleLmp(30_000, 0, 0))
     maker.start()
     try:
         deadline = time.time() + 15
@@ -71,7 +85,7 @@ def test_publish_is_heard_on_the_mic_exchange() -> None:
             time.sleep(0.1)
         assert maker.consuming
         start = slot_start(int(time.time()))
-        maker.publish_price(SlotPrice(start, 30.0, 64.26))
+        maker.publish_price(SlotPrice(start, WholesaleLmp(30_000, 250, -400), 58_556))
         listener.join(20)
     finally:
         maker.stop()
@@ -82,6 +96,8 @@ def test_publish_is_heard_on_the_mic_exchange() -> None:
     word = default_codec.from_dict(json.loads(body))
     assert isinstance(word, LatestPrice)
     assert word.from_g_node_alias == "d1.isone.me.versant.keene"
-    assert word.price_times1000 == round((30.0 + 64.26) * 1000)
+    assert word.price_x1000 == 30_000 + 250 - 400 + 58_556
+    assert sum(c.price_x1000 for c in word.components) == word.price_x1000
+    assert word.tariff_alias == TARIFF_ALIAS
     assert word.market_slot_name.endswith(f".{start}")
     assert int(word.market_slot_name.rsplit(".", 1)[1]) % SLOT_S == 0

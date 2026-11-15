@@ -1,7 +1,11 @@
 # GENERATED FILE - DO NOT EDIT
 # Generated from definitions/registry.yaml
 
-types: {}
+types:
+  price.component:
+    '000':
+      used_by:
+      - latest.price:001
 enums:
   log.level:
     '000':
@@ -10,21 +14,27 @@ enums:
   market.price.unit:
     '000':
       used_by:
-      - latest.price:000
+      - latest.price:001
+  price.component.name:
+    '000':
+      used_by:
+      - latest.price:001
+      - price.component:000
 formats:
   left.right.dot:
     used_by:
     - glitch:000
-    - latest.price:000
+    - latest.price:001
   market.slot.name:
     used_by:
-    - latest.price:000
+    - latest.price:001
   spaceheat.name:
     used_by:
     - glitch:000
   utc.milliseconds:
     used_by:
     - glitch:000
+    - latest.price:001
   uuid4.str:
     used_by:
-    - latest.price:000
+    - latest.price:001

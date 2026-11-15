@@ -1,19 +1,28 @@
 """The slot gate on a fake clock: fetch before the hour, publish at it,
 stale fallback with a glitch, nothing to publish on a cold failure."""
 
-from gwmm.gate import SLOT_S, SlotGate, SlotPrice, next_slot_start, slot_start
+from gwmm.gate import (
+    SLOT_S,
+    SlotGate,
+    SlotPrice,
+    WholesaleLmp,
+    next_slot_start,
+    slot_start,
+)
+
+LMP = WholesaleLmp(energy_x1000=30_000, congestion_x1000=250, loss_x1000=-400)
 
 HOUR = 1_770_000_000 - 1_770_000_000 % SLOT_S  # some top of an hour
 
 
 class Recorder:
-    def __init__(self, lmp: float | None = 30.0) -> None:
+    def __init__(self, lmp: WholesaleLmp | None = LMP) -> None:
         self.lmp = lmp
         self.fetches = 0
         self.published: list[SlotPrice] = []
         self.glitches: list[tuple[str, str]] = []
 
-    def fetch(self) -> float:
+    def fetch(self) -> WholesaleLmp:
         self.fetches += 1
         if self.lmp is None:
             raise ConnectionError("iso-ne down")
@@ -59,19 +68,19 @@ def test_fetch_before_the_hour_then_publish_at_it() -> None:
     assert len(r.published) == 1
 
 
-def test_energy_is_lmp_plus_delivery() -> None:
-    r = Recorder(lmp=30.0)
+def test_price_is_the_lmp_parts_plus_delivery() -> None:
+    r = Recorder(lmp=LMP)
     g = r.gate()
     g.tick(HOUR - 600)  # boot
     g.tick(HOUR - 20)
     g.tick(HOUR)
     p = r.published[0]
-    assert p.lmp_usd_per_mwh == 30.0
-    assert p.energy_usd_per_mwh == 30.0 + p.delivery_usd_per_mwh
+    assert p.lmp == LMP
+    assert p.price_x1000 == 30_000 + 250 - 400 + p.delivery_x1000
 
 
 def test_failed_fetch_publishes_last_price_and_glitches() -> None:
-    r = Recorder(lmp=30.0)
+    r = Recorder(lmp=LMP)
     g = r.gate()
     g.tick(HOUR - 600)  # boot
     g.tick(HOUR - 20)
@@ -80,7 +89,7 @@ def test_failed_fetch_publishes_last_price_and_glitches() -> None:
     g.tick(HOUR + SLOT_S - 20)
     g.tick(HOUR + SLOT_S)
     assert [p.slot_start_s for p in r.published] == [HOUR, HOUR + SLOT_S]
-    assert r.published[1].lmp_usd_per_mwh == 30.0
+    assert r.published[1].lmp == LMP
     assert len(r.glitches) == 1
     assert r.glitches[0][0] == "stale price published"
     assert "ConnectionError" in r.glitches[0][1]
@@ -95,8 +104,8 @@ def test_cold_failure_publishes_nothing_and_glitches() -> None:
     assert r.published == []
     assert [s for s, _ in r.glitches] == ["no price to publish"]
     # the next slot with ISO-NE back publishes fresh, no glitch
-    r.lmp = 40.0
+    r.lmp = WholesaleLmp(40_000, 0, 0)
     g.tick(HOUR + SLOT_S - 20)
     g.tick(HOUR + SLOT_S)
-    assert [p.lmp_usd_per_mwh for p in r.published] == [40.0]
+    assert [p.lmp for p in r.published] == [WholesaleLmp(40_000, 0, 0)]
     assert len(r.glitches) == 1

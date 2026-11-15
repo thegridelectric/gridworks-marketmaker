@@ -1,6 +1,8 @@
 enums:
   log.level: log.level
   market.price.unit: market.price.unit
+  price.component.name: price.component.name
 types:
   glitch: glitch
   latest.price: latest.price
+  price.component: price.component

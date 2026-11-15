@@ -1,9 +1,9 @@
 metadata:
   generated_from: indexes/public_registry.yaml
-  generated_at: '2026-10-22T14:44:29Z'
+  generated_at: '2026-11-15T02:06:49Z'
   note: Transitive closure of initial_targets
 initial_targets:
-- latest.price:000
+- latest.price:001
 - glitch:000
 worklist:
   formats:
@@ -24,10 +24,16 @@ worklist:
     market.price.unit:
       '000':
         path: definitions/enums/market.price.unit/000.yaml
+    price.component.name:
+      '000':
+        path: definitions/enums/price.component.name/000.yaml
   types:
     glitch:
       '000':
         path: definitions/types/glitch/000.yaml
     latest.price:
+      '001':
+        path: definitions/types/latest.price/001.yaml
+    price.component:
       '000':
-        path: definitions/types/latest.price/000.yaml
+        path: definitions/types/price.component/000.yaml

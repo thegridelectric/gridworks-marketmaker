@@ -12,7 +12,8 @@ price series.
 The price is ISO-NE's current 5-minute real-time locational marginal
 price at Keene Rd (location 43790), fetched a few seconds before the
 hour, plus the Versant Rate A-1 total-delivery price for the hour
-(`src/gwmm/tariff.py`). If ISO-NE does not answer in time the maker
+(`src/gwmm/tariff.py`), stated in its parts: the LMP's energy,
+congestion and loss, and delivery under the named tariff. If ISO-NE does not answer in time the maker
 publishes the last price it published and raises a `Critical` glitch.
 
 The maker receives bids and drops them. The ack that makes a bid a
