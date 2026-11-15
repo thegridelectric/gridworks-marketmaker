@@ -1,13 +1,10 @@
-"""The MarketMaker actor: publishes latest.price at the top of every hour.
+"""The MarketMaker actor: states the market's price at the top of every hour.
 
-A gwbase GridworksActor with the MarketMaker transport class. Its one
-publication is the broadcast
-
-    rjb.<maker-alias-lrh>.mm.latest-price
-
-whose body is the latest.price word for the slot that just opened. Bids
-addressed to the maker are received and dropped; the ack that makes a
-bid a contract is the full maker's job.
+Each hour the actor publishes one price word for the slot that just
+opened, assembled from the wholesale parts the gate fetched and the
+tariff's delivery price for the hour, and raises a critical fault when
+it had to publish stale. Bids addressed to the maker are received and
+dropped; the ack that makes a bid a contract is the full maker's job.
 """
 
 import json
@@ -22,7 +19,7 @@ from gwbase.sema.types.gridworks_header import GridworksHeader
 from gwbase.transport_encoding import RoutingEnvelope
 
 from gwmm.config import GwmmSettings
-from gwmm.gate import SlotGate, SlotPrice, WholesaleLmp
+from gwmm.gate import FiveMinuteLmp, SlotGate, SlotPrice
 from gwmm.isone import IsoneClient
 from gwmm.sema.enums import LogLevel, MarketPriceUnit, PriceComponentName
 from gwmm.sema.types import Glitch, LatestPrice, PriceComponent
@@ -63,7 +60,7 @@ class MarketMaker(GridworksActor):
         self,
         settings: GwmmSettings,
         *,
-        fetch_lmp: Callable[[], WholesaleLmp] | None = None,
+        fetch_lmp: Callable[[], FiveMinuteLmp] | None = None,
     ) -> None:
         super().__init__(
             settings=settings,
@@ -78,12 +75,12 @@ class MarketMaker(GridworksActor):
                 settings.isone_api_pass.get_secret_value(),
                 settings.isone_location_id,
             )
-            fetch_lmp = lambda: client.current().lmp
+            fetch_lmp = client.current
         self.gate = SlotGate(
             fetch_lmp=fetch_lmp,
             publish=self.publish_price,
             raise_glitch=self.raise_glitch,
-            fetch_lead_s=settings.fetch_lead_s,
+            fetch_deadline_s=settings.fetch_deadline_s,
         )
         self.main_thread = threading.Thread(target=self.main, daemon=True)
 

@@ -1,25 +1,15 @@
-"""Delivery price per hour under Versant Rate A-1, "Home Eco Rate with
-Bonus Meter" (Bangor Hydro District, page 6.1.1, Seventeenth Revision,
-effective 2026-07-01).
+"""The delivery price of an hour under the fleet's time-of-use tariff.
 
-The total-delivery price (distribution, transmission, stranded cost and
-conservation energy charges) by period, in USD/MWh:
+Versant Rate A-1, "Home Eco Rate with Bonus Meter" (Bangor Hydro
+District), charges delivery by period: on-peak, shoulder and off-peak
+hours set by the weekday, the wall clock in the tariff's zone and the
+tariff's holidays, with a higher on-peak price in winter. This module
+answers the one question the maker asks of it: the total delivery price,
+in the price word's integer form, for the hour starting at a given time.
 
-| period   | winter (Nov-Feb) | non-winter (Mar-Oct) |
-|----------|------------------|----------------------|
-| on-peak  | 588.532          | 574.178              |
-| shoulder | 64.429           | 64.429               |
-| off-peak | 58.556           | 58.556               |
-
-Weekdays: on-peak 07:00-12:00 and 16:00-20:00, shoulder 12:00-16:00,
-off-peak 20:00-07:00. Weekends and the tariff's ten holidays: shoulder
-07:00-20:00, off-peak 20:00-07:00. All on the America/New_York wall
-clock. The tariff's DST-bracketing schedule (the two weeks around each
-transition) is not modelled; those hours take the standard windows.
-
-This table is a hand copy, the same one the price-forecast service
-uses. No sema word states a tariff's prices; a tariff word with prices
-and a revision retires this module.
+The prices are a hand copy of the tariff sheet, the same copy the
+price-forecast service uses. No sema word states a tariff's prices; a
+tariff word with prices and a revision retires this module.
 """
 
 from datetime import date, datetime, timedelta
@@ -38,7 +28,11 @@ TARIFF_ALIAS: LeftRightDot = TypeAdapter(LeftRightDot).validate_python(
     "versant.a1.home.eco.bonus"
 )
 
-# Prices times 1000 in USD/MWh, the price word's integer form.
+# Total delivery (distribution, transmission, stranded cost and
+# conservation) per period, page 6.1.1 Seventeenth Revision, effective
+# 2026-07-01, in USD/MWh times 1000. Winter is November through February.
+# The DST-bracketing schedule (the two weeks around each transition) is
+# not modelled; those hours take the standard windows.
 ON_PEAK_WINTER_X1000 = 588_532
 ON_PEAK_NON_WINTER_X1000 = 574_178
 SHOULDER_X1000 = 64_429

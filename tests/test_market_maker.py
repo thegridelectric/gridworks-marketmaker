@@ -19,7 +19,7 @@ from gwbase.config.rabbit_settings import RabbitBrokerClient
 from pydantic import SecretStr
 
 from gwmm.config import GwmmSettings
-from gwmm.gate import SLOT_S, SlotPrice, WholesaleLmp, slot_start
+from gwmm.gate import SLOT_S, FiveMinuteLmp, SlotPrice, WholesaleLmp, slot_start
 from gwmm.market_maker import MarketMaker, market_slot_name, price_components
 from gwmm.sema.codec import default_codec
 from gwmm.sema.enums import PriceComponentName
@@ -77,7 +77,9 @@ def test_publish_is_heard_on_the_mic_exchange() -> None:
     listener.start()
     assert ready.wait(10)
 
-    maker = MarketMaker(settings, fetch_lmp=lambda: WholesaleLmp(30_000, 0, 0))
+    maker = MarketMaker(
+        settings, fetch_lmp=lambda: FiveMinuteLmp(0, WholesaleLmp(30_000, 0, 0))
+    )
     maker.start()
     try:
         deadline = time.time() + 15
