@@ -17,7 +17,7 @@ from gwmm.config import GwmmSettings
 from gwmm.gate import SlotPrice, slot_start
 from gwmm.isone import IsoneClient
 from gwmm.market_maker import MarketMaker, market_slot_name
-from gwmm.tariff import TARIFF_TZ, delivery_usd_per_mwh
+from gwmm.tariff import TARIFF_TZ, delivery_x1000
 
 
 def load_settings() -> GwmmSettings:
@@ -44,15 +44,19 @@ def run_show() -> None:
     )
     interval = client.current()
     start = slot_start(int(time.time()))
-    price = SlotPrice(start, interval.lmp_usd_per_mwh, delivery_usd_per_mwh(start))
+    price = SlotPrice(start, interval.lmp, delivery_x1000(start))
     local = datetime.fromtimestamp(start, TARIFF_TZ)
     print(market_slot_name(settings.market_product, settings.service_alias, start))
     print(f"slot {local:%Y-%m-%d %H:%M %Z}")
+    lmp = price.lmp
     print(
-        f"lmp {price.lmp_usd_per_mwh:.2f} (interval "
-        f"{datetime.fromtimestamp(interval.begin_s, TARIFF_TZ):%H:%M}) "
-        f"+ delivery {price.delivery_usd_per_mwh:.2f} "
-        f"= {price.energy_usd_per_mwh:.2f} USD/MWh"
+        f"lmp {lmp.total_x1000 / 1000:.3f} (interval "
+        f"{datetime.fromtimestamp(interval.begin_s, TARIFF_TZ):%H:%M}: "
+        f"energy {lmp.energy_x1000 / 1000:.3f}, "
+        f"congestion {lmp.congestion_x1000 / 1000:.3f}, "
+        f"loss {lmp.loss_x1000 / 1000:.3f}) "
+        f"+ delivery {price.delivery_x1000 / 1000:.3f} "
+        f"= {price.price_x1000 / 1000:.3f} USD/MWh"
     )
 
 

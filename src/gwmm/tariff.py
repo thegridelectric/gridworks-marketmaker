@@ -1,14 +1,15 @@
 """Delivery price per hour under Versant Rate A-1, "Home Eco Rate with
-Bonus Meter" (Bangor Hydro District, effective 2025-07-01).
+Bonus Meter" (Bangor Hydro District, page 6.1.1, Seventeenth Revision,
+effective 2026-07-01).
 
 The total-delivery price (distribution, transmission, stranded cost and
 conservation energy charges) by period, in USD/MWh:
 
 | period   | winter (Nov-Feb) | non-winter (Mar-Oct) |
 |----------|------------------|----------------------|
-| on-peak  | 612.10           | 597.28               |
-| shoulder | 70.34            | 70.34                |
-| off-peak | 64.26            | 64.26                |
+| on-peak  | 588.532          | 574.178              |
+| shoulder | 64.429           | 64.429               |
+| off-peak | 58.556           | 58.556               |
 
 Weekdays: on-peak 07:00-12:00 and 16:00-20:00, shoulder 12:00-16:00,
 off-peak 20:00-07:00. Weekends and the tariff's ten holidays: shoulder
@@ -16,22 +17,32 @@ off-peak 20:00-07:00. Weekends and the tariff's ten holidays: shoulder
 clock. The tariff's DST-bracketing schedule (the two weeks around each
 transition) is not modelled; those hours take the standard windows.
 
-This table is a copy of the one the price-forecast service uses. No sema
-word describes a delivery tariff yet; the word that retires both copies
-is the one OPS-610's tariff-vocabulary spoke defines.
+This table is a hand copy, the same one the price-forecast service
+uses. No sema word states a tariff's prices; a tariff word with prices
+and a revision retires this module.
 """
 
 from datetime import date, datetime, timedelta
 from enum import Enum, auto
 from zoneinfo import ZoneInfo
 
+from pydantic import TypeAdapter
+
+from gwmm.sema.property_format import LeftRightDot
+
 TARIFF_TZ = ZoneInfo("America/New_York")
 WINTER_MONTHS = frozenset({11, 12, 1, 2})
 
-ON_PEAK_WINTER_USD_PER_MWH = 612.10
-ON_PEAK_NON_WINTER_USD_PER_MWH = 597.28
-SHOULDER_USD_PER_MWH = 70.34
-OFF_PEAK_USD_PER_MWH = 64.26
+# The alias latest.price names the tariff by (its TariffAlias).
+TARIFF_ALIAS: LeftRightDot = TypeAdapter(LeftRightDot).validate_python(
+    "versant.a1.home.eco.bonus"
+)
+
+# Prices times 1000 in USD/MWh, the price word's integer form.
+ON_PEAK_WINTER_X1000 = 588_532
+ON_PEAK_NON_WINTER_X1000 = 574_178
+SHOULDER_X1000 = 64_429
+OFF_PEAK_X1000 = 58_556
 
 
 class Period(Enum):
@@ -86,15 +97,16 @@ def period_at(local: datetime) -> Period:
     return Period.OnPeak
 
 
-def delivery_usd_per_mwh(hour_start_s: int) -> float:
-    """Total-delivery price for the hour starting at the given time (unix
-    seconds; the utc.seconds format is outside this snapshot's closure)."""
+def delivery_x1000(hour_start_s: int) -> int:
+    """Total-delivery price, times 1000 in USD/MWh, for the hour starting
+    at the given time (unix seconds; the utc.seconds format is outside
+    this snapshot's closure)."""
     local = datetime.fromtimestamp(hour_start_s, TARIFF_TZ)
     period = period_at(local)
     if period is Period.OffPeak:
-        return OFF_PEAK_USD_PER_MWH
+        return OFF_PEAK_X1000
     if period is Period.Shoulder:
-        return SHOULDER_USD_PER_MWH
+        return SHOULDER_X1000
     if local.month in WINTER_MONTHS:
-        return ON_PEAK_WINTER_USD_PER_MWH
-    return ON_PEAK_NON_WINTER_USD_PER_MWH
+        return ON_PEAK_WINTER_X1000
+    return ON_PEAK_NON_WINTER_X1000

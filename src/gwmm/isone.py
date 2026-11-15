@@ -7,10 +7,13 @@ interval it has priced.
 
 import xml.etree.ElementTree as ET
 from datetime import datetime
+from decimal import Decimal
 from typing import NamedTuple
 
 import requests
 from requests.auth import HTTPBasicAuth
+
+from gwmm.gate import WholesaleLmp
 
 ISONE_NAMESPACE = {"ns": "http://WEBSERV.iso-ne.com"}
 CURRENT_URL = (
@@ -22,11 +25,11 @@ TIMEOUT_S = 15
 class FiveMinuteLmp(NamedTuple):
     """One 5-minute interval's locational marginal price at one node: the
     interval's start (unix seconds; the utc.seconds format is outside this
-    snapshot's closure) and the total LMP in USD/MWh. Interior to the
-    fetch; latest.price is the boundary form."""
+    snapshot's closure) and the LMP in its energy, congestion and loss
+    parts. Interior to the fetch; latest.price is the boundary form."""
 
     begin_s: int
-    lmp_usd_per_mwh: float
+    lmp: WholesaleLmp
 
 
 class IsoneClient:
@@ -50,9 +53,24 @@ def parse_current(xml_text: str, location_id: str) -> FiveMinuteLmp:
     location = root.find("ns:Location", ISONE_NAMESPACE)
     if location is None or location.attrib.get("LocId") != location_id:
         raise ValueError(f"ISO-NE FiveMinLmp is not for location {location_id}")
-    begin = root.find("ns:BeginDate", ISONE_NAMESPACE)
-    total = root.find("ns:LmpTotal", ISONE_NAMESPACE)
-    if begin is None or begin.text is None or total is None or total.text is None:
-        raise ValueError("ISO-NE FiveMinLmp without BeginDate or LmpTotal")
-    begin_dt = datetime.strptime(begin.text, "%Y-%m-%dT%H:%M:%S.%f%z")
-    return FiveMinuteLmp(int(begin_dt.timestamp()), float(total.text))
+    begin = text_of(root, "BeginDate")
+    begin_dt = datetime.strptime(begin, "%Y-%m-%dT%H:%M:%S.%f%z")
+    lmp = WholesaleLmp(
+        energy_x1000=x1000(text_of(root, "EnergyComponent")),
+        congestion_x1000=x1000(text_of(root, "CongestionComponent")),
+        loss_x1000=x1000(text_of(root, "LossComponent")),
+    )
+    return FiveMinuteLmp(int(begin_dt.timestamp()), lmp)
+
+
+def text_of(root: ET.Element, tag: str) -> str:
+    """The text of the response's one `tag` element."""
+    element = root.find(f"ns:{tag}", ISONE_NAMESPACE)
+    if element is None or element.text is None:
+        raise ValueError(f"ISO-NE FiveMinLmp without {tag}")
+    return element.text
+
+
+def x1000(usd_per_mwh: str) -> int:
+    """A decimal USD/MWh amount as the price word's integer, times 1000."""
+    return int((Decimal(usd_per_mwh) * 1000).to_integral_value())
