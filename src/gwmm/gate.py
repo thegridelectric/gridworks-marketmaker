@@ -1,23 +1,30 @@
-"""The slot gate: when to fetch, when to publish, and what price.
+"""The slot gate: when to publish, at which stage, and what price.
 
 Pure clock logic with no broker and no HTTP, so the top-of-hour behavior
 is testable on a fake clock. The maker owns the side effects and hands
 them in as callables.
 
-Each slot is one hour on the wall clock. A few seconds before the slot
-opens the gate fetches the current 5-minute LMP in its parts; at the top
-of the hour it publishes the slot's price: the wholesale parts plus the
-delivery price for the hour. A maker that boots mid-slot publishes
-nothing for that slot: an LTN clears against a price only at the top of
-the hour, when its bid is in. When the fetch for a slot failed, the gate
-publishes the last wholesale parts it published and raises a critical
-glitch, so the houses still clear and someone is paged. With no price
-ever published it can only raise the glitch.
+Each slot is one hour on the wall clock, and the maker states its price
+twice. At the top of the hour it publishes the Provisional price: the
+last wholesale parts it published, which are the previous slot's first
+interval, plus the delivery price for this hour, both in hand with no
+fetch. The slot's wholesale price is the 5-minute LMP of its first
+interval, the one that begins as the slot opens. ISO-NE posts an
+interval's price about 25 s after it begins, so from the top of the hour
+the gate asks ISO-NE for its current interval on every tick until the
+answer is the slot's own, then publishes the Final price: that
+interval's parts plus the delivery price for the hour. When
+fetch_deadline_s pass with no answer, the gate publishes the Final at
+the provisional value and raises a critical glitch, so the contract
+binds and someone is paged. A maker that boots mid-slot publishes
+nothing for that slot, and with nothing published before it has no
+provisional to state: its first slot gets a Final alone, or the glitch.
 """
 
 from collections.abc import Callable
 from typing import NamedTuple
 
+from gwmm.sema.enums import PriceStage
 from gwmm.tariff import delivery_x1000
 
 SLOT_S = 3600
@@ -37,16 +44,28 @@ class WholesaleLmp(NamedTuple):
         return self.energy_x1000 + self.congestion_x1000 + self.loss_x1000
 
 
-class SlotPrice(NamedTuple):
-    """The price the maker publishes for one slot: the slot's start, the
-    LMP at the gate in its parts and the delivery price for the hour,
-    times 1000 in USD/MWh. The start is unix seconds (the utc.seconds
-    format is outside this snapshot's closure). Interior record;
+class FiveMinuteLmp(NamedTuple):
+    """One 5-minute interval's locational marginal price at one node: the
+    interval's start (unix seconds; the utc.seconds format is outside this
+    snapshot's closure) and the LMP in its parts. Interior to the fetch;
     latest.price is the boundary form."""
+
+    begin_s: int
+    lmp: WholesaleLmp
+
+
+class SlotPrice(NamedTuple):
+    """The price the maker publishes for one slot at one stage: the slot's
+    start, the wholesale LMP in its parts, the delivery price for the
+    hour, times 1000 in USD/MWh, and the stage of the maker's commitment.
+    The start is unix seconds (the utc.seconds format is outside this
+    snapshot's closure). Interior record; latest.price is the boundary
+    form."""
 
     slot_start_s: int
     lmp: WholesaleLmp
     delivery_x1000: int
+    stage: PriceStage
 
     @property
     def price_x1000(self) -> int:
@@ -64,65 +83,98 @@ def next_slot_start(now_s: int) -> int:
 
 
 class SlotGate:
-    """Drives one fetch and one publish per slot from repeated `tick` calls."""
+    """Drives the publishes of each slot, provisional then final, from
+    repeated `tick` calls."""
 
     def __init__(
         self,
         *,
-        fetch_lmp: Callable[[], WholesaleLmp],
+        fetch_lmp: Callable[[], FiveMinuteLmp],
         publish: Callable[[SlotPrice], None],
         raise_glitch: Callable[[str, str], None],
-        fetch_lead_s: int,
+        fetch_deadline_s: int,
     ) -> None:
         self.fetch_lmp = fetch_lmp
         self.publish = publish
         self.raise_glitch = raise_glitch
-        self.fetch_lead_s = fetch_lead_s
-        self.fetched_slot: int | None = None
-        self.fetched_lmp: WholesaleLmp | None = None
+        self.fetch_deadline_s = fetch_deadline_s
+        self.current_slot: int | None = None
+        self.pending_slot: int | None = None
         self.fetch_error: str | None = None
-        self.published_slot: int | None = None
-        self.last_published: SlotPrice | None = None
+        self.last_lmp: WholesaleLmp | None = None
 
     def tick(self, now_s: int) -> None:
-        upcoming = next_slot_start(now_s)
-        if now_s >= upcoming - self.fetch_lead_s and self.fetched_slot != upcoming:
-            self.fetch_for(upcoming)
         current = slot_start(now_s)
-        if self.published_slot is None:
+        if self.current_slot is None:
             # Boot: the open slot is already cleared or missed; the first
-            # publish is the next top of the hour.
-            self.published_slot = current
-        elif self.published_slot != current:
-            self.publish_for(current)
-
-    def fetch_for(self, slot_start_s: int) -> None:
-        self.fetched_slot = slot_start_s
-        try:
-            self.fetched_lmp = self.fetch_lmp()
+            # price is for the next slot.
+            self.current_slot = current
+            return
+        if self.current_slot != current:
+            self.current_slot = current
+            self.pending_slot = current
             self.fetch_error = None
-        except Exception as e:  # noqa: BLE001 -- any fetch failure is one case
-            self.fetched_lmp = None
-            self.fetch_error = f"{type(e).__name__}: {e}"
+            self.publish_provisional(current)
+        if self.pending_slot is None:
+            return
+        if self.fetch_for(self.pending_slot):
+            return
+        if now_s >= self.pending_slot + self.fetch_deadline_s:
+            self.publish_at_deadline(self.pending_slot)
 
-    def publish_for(self, slot_start_s: int) -> None:
-        self.published_slot = slot_start_s
-        delivery = delivery_x1000(slot_start_s)
-        if self.fetched_slot == slot_start_s and self.fetched_lmp is not None:
-            price = SlotPrice(slot_start_s, self.fetched_lmp, delivery)
-        elif self.last_published is not None:
-            price = SlotPrice(slot_start_s, self.last_published.lmp, delivery)
-            self.raise_glitch(
-                "stale price published",
-                f"no fresh LMP for slot {slot_start_s} ({self.fetch_error}); "
-                f"published the LMP from slot {self.last_published.slot_start_s}",
+    def publish_provisional(self, slot_start_s: int) -> None:
+        """The slot's Provisional price at its open, from the last
+        wholesale parts published; nothing when there are none."""
+        if self.last_lmp is None:
+            return
+        self.publish(
+            SlotPrice(
+                slot_start_s,
+                self.last_lmp,
+                delivery_x1000(slot_start_s),
+                PriceStage.Provisional,
             )
-        else:
+        )
+
+    def fetch_for(self, slot_start_s: int) -> bool:
+        """One ask of ISO-NE for the slot's first interval; True when the
+        slot's Final went out on it."""
+        try:
+            interval = self.fetch_lmp()
+        except Exception as e:  # noqa: BLE001 -- any fetch failure is one case
+            self.fetch_error = f"{type(e).__name__}: {e}"
+            return False
+        if interval.begin_s != slot_start_s:
+            self.fetch_error = (
+                f"ISO-NE's latest posted interval begins at {interval.begin_s}"
+            )
+            return False
+        self.publish_final(slot_start_s, interval.lmp)
+        return True
+
+    def publish_at_deadline(self, slot_start_s: int) -> None:
+        """The deadline passed with no answer: the Final at the provisional
+        value with a critical glitch, or the glitch alone when there is no
+        provisional value."""
+        self.pending_slot = None
+        if self.last_lmp is None:
             self.raise_glitch(
                 "no price to publish",
-                f"no fresh LMP for slot {slot_start_s} ({self.fetch_error}) "
-                "and nothing published before",
+                f"no price for slot {slot_start_s} within {self.fetch_deadline_s} s "
+                f"({self.fetch_error}) and nothing published before",
             )
             return
-        self.publish(price)
-        self.last_published = price
+        self.raise_glitch(
+            "final at the provisional value",
+            f"no ISO-NE price for slot {slot_start_s} within "
+            f"{self.fetch_deadline_s} s ({self.fetch_error}); the Final is the "
+            f"provisional value",
+        )
+        self.publish_final(slot_start_s, self.last_lmp)
+
+    def publish_final(self, slot_start_s: int, lmp: WholesaleLmp) -> None:
+        self.pending_slot = None
+        self.publish(
+            SlotPrice(slot_start_s, lmp, delivery_x1000(slot_start_s), PriceStage.Final)
+        )
+        self.last_lmp = lmp

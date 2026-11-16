@@ -1,13 +1,11 @@
-"""The MarketMaker actor: publishes latest.price at the top of every hour.
+"""The MarketMaker actor: states the market's price for every hour, twice.
 
-A gwbase GridworksActor with the MarketMaker transport class. Its one
-publication is the broadcast
-
-    rjb.<maker-alias-lrh>.mm.latest-price
-
-whose body is the latest.price word for the slot that just opened. Bids
-addressed to the maker are received and dropped; the ack that makes a
-bid a contract is the full maker's job.
+Each hour the actor publishes the slot's Provisional price at the top of
+the hour and its Final price when ISO-NE posts the slot's first
+interval, each assembled from wholesale parts and the tariff's delivery
+price for the hour, and raises a critical fault when the Final had to
+take the provisional value. Bids addressed to the maker are received and
+dropped; the ack that makes a bid a contract is the full maker's job.
 """
 
 import json
@@ -22,7 +20,7 @@ from gwbase.sema.types.gridworks_header import GridworksHeader
 from gwbase.transport_encoding import RoutingEnvelope
 
 from gwmm.config import GwmmSettings
-from gwmm.gate import SlotGate, SlotPrice, WholesaleLmp
+from gwmm.gate import FiveMinuteLmp, SlotGate, SlotPrice
 from gwmm.isone import IsoneClient
 from gwmm.sema.enums import LogLevel, MarketPriceUnit, PriceComponentName
 from gwmm.sema.types import Glitch, LatestPrice, PriceComponent
@@ -57,13 +55,13 @@ def price_components(price: SlotPrice) -> list[PriceComponent]:
 
 
 class MarketMaker(GridworksActor):
-    """Publishes the cleared price for its one market, every hour."""
+    """Publishes the price of its one market, provisional then final, every hour."""
 
     def __init__(
         self,
         settings: GwmmSettings,
         *,
-        fetch_lmp: Callable[[], WholesaleLmp] | None = None,
+        fetch_lmp: Callable[[], FiveMinuteLmp] | None = None,
     ) -> None:
         super().__init__(
             settings=settings,
@@ -78,12 +76,12 @@ class MarketMaker(GridworksActor):
                 settings.isone_api_pass.get_secret_value(),
                 settings.isone_location_id,
             )
-            fetch_lmp = lambda: client.current().lmp
+            fetch_lmp = client.current
         self.gate = SlotGate(
             fetch_lmp=fetch_lmp,
             publish=self.publish_price,
             raise_glitch=self.raise_glitch,
-            fetch_lead_s=settings.fetch_lead_s,
+            fetch_deadline_s=settings.fetch_deadline_s,
         )
         self.main_thread = threading.Thread(target=self.main, daemon=True)
 
@@ -124,6 +122,7 @@ class MarketMaker(GridworksActor):
             market_slot_name=market_slot_name(
                 self.market_product, self.alias, price.slot_start_s
             ),
+            price_stage=price.stage,
             components=price_components(price),
             tariff_alias=TARIFF_ALIAS,
             created_ms=int(time.time() * 1000),
@@ -135,8 +134,9 @@ class MarketMaker(GridworksActor):
         envelope = self.broadcast_envelope(type_name=word.type_name)
         self.send(envelope=envelope, body=json.dumps(word.to_dict()).encode("utf-8"))
         self.logger.info(
-            "published %s: lmp %.3f + delivery %.3f = %.3f USD/MWh",
+            "published %s %s: lmp %.3f + delivery %.3f = %.3f USD/MWh",
             word.market_slot_name,
+            price.stage.value,
             price.lmp.total_x1000 / 1000,
             price.delivery_x1000 / 1000,
             price.price_x1000 / 1000,

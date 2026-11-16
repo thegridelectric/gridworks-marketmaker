@@ -25,14 +25,16 @@ class GwmmSettings(GNodeSettings):
     market_product: SpaceheatName = "rt60gate5"
 
     # ISO-NE web services (https://webservices.iso-ne.com), basic auth,
-    # and the pricing node whose 5-minute LMP opens each slot.
+    # and the pricing node whose first 5-minute LMP of the hour is the
+    # slot's wholesale price.
     isone_user: str
     isone_api_pass: SecretStr
     isone_location_id: str = "43790"
 
-    # How long before the slot opens the maker asks ISO-NE for the price,
-    # so the publish itself is at the top of the hour.
-    fetch_lead_s: int = 20
+    # From the top of the hour the maker asks ISO-NE for its current
+    # interval on every tick until it is the slot's own; after
+    # fetch_deadline_s without it the Final takes the provisional value.
+    fetch_deadline_s: int = 240
 
     # Control-plane participants required by GridworksActor. Placeholders
     # on a dev rung; in prod the supervisor and time coordinator aliases.

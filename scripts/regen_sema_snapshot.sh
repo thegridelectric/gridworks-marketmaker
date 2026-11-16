@@ -15,6 +15,10 @@
 # ship from before running. The CLI's default guard refuses a seed whose
 # closure reaches an unpublished word.
 #
+# --allow-staged: latest.price 002 and price.stage are staging until the
+# two-stage price has run its verifying window on hw1; the snapshot is
+# dev-only until they are promoted, and the flag comes out then.
+#
 # Usage:
 #   scripts/regen_sema_snapshot.sh                 # sibling ../sema checkout
 #   SEMA_REPO=/path/to/sema scripts/regen_sema_snapshot.sh
@@ -39,8 +43,8 @@ echo "==> seed:      ${SEED}"
 echo "==> package:   ${PACKAGE_NAME}"
 
 cd "${SEMA_REPO}"
-echo "==> sema snapshot prepare"
-uv run sema snapshot prepare "${SEED}"
+echo "==> sema snapshot prepare --allow-staged"
+uv run sema snapshot prepare --allow-staged "${SEED}"
 echo "==> sema snapshot build --package-name ${PACKAGE_NAME}"
 uv run sema snapshot build --package-name "${PACKAGE_NAME}"
 

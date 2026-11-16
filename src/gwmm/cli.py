@@ -1,8 +1,9 @@
 """gwmm console entry point: `gwmm {rabbit,show}`.
 
 `rabbit` runs the maker (the systemd unit `mm-rabbit.service`). `show`
-prints the price the maker would publish for the open slot right now,
-with no broker, for a check from a shell.
+prints the price the open slot has right now from ISO-NE's latest
+posted interval, Final when that interval is the slot's own and
+Provisional otherwise, with no broker, for a check from a shell.
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ from gwmm.config import GwmmSettings
 from gwmm.gate import SlotPrice, slot_start
 from gwmm.isone import IsoneClient
 from gwmm.market_maker import MarketMaker, market_slot_name
+from gwmm.sema.enums import PriceStage
 from gwmm.tariff import TARIFF_TZ, delivery_x1000
 
 
@@ -44,10 +46,11 @@ def run_show() -> None:
     )
     interval = client.current()
     start = slot_start(int(time.time()))
-    price = SlotPrice(start, interval.lmp, delivery_x1000(start))
+    stage = PriceStage.Final if interval.begin_s == start else PriceStage.Provisional
+    price = SlotPrice(start, interval.lmp, delivery_x1000(start), stage)
     local = datetime.fromtimestamp(start, TARIFF_TZ)
     print(market_slot_name(settings.market_product, settings.service_alias, start))
-    print(f"slot {local:%Y-%m-%d %H:%M %Z}")
+    print(f"slot {local:%Y-%m-%d %H:%M %Z} {price.stage.value}")
     lmp = price.lmp
     print(
         f"lmp {lmp.total_x1000 / 1000:.3f} (interval "

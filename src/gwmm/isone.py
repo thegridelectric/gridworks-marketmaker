@@ -1,35 +1,24 @@
 """The current 5-minute real-time LMP from ISO-NE web services.
 
-One call per location. ISO-NE publishes each 5-minute interval's price a
-minute or two after the interval starts, so "current" is the latest
-interval it has priced.
+One call per location. ISO-NE posts each 5-minute interval's price about
+25 s after the interval begins, so "current" is the latest interval it
+has posted, which the gate compares with the slot it wants.
 """
 
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from decimal import Decimal
-from typing import NamedTuple
 
 import requests
 from requests.auth import HTTPBasicAuth
 
-from gwmm.gate import WholesaleLmp
+from gwmm.gate import FiveMinuteLmp, WholesaleLmp
 
 ISONE_NAMESPACE = {"ns": "http://WEBSERV.iso-ne.com"}
 CURRENT_URL = (
     "https://webservices.iso-ne.com/api/v1.1/fiveminutelmp/current/location/{location}"
 )
 TIMEOUT_S = 15
-
-
-class FiveMinuteLmp(NamedTuple):
-    """One 5-minute interval's locational marginal price at one node: the
-    interval's start (unix seconds; the utc.seconds format is outside this
-    snapshot's closure) and the LMP in its energy, congestion and loss
-    parts. Interior to the fetch; latest.price is the boundary form."""
-
-    begin_s: int
-    lmp: WholesaleLmp
 
 
 class IsoneClient:

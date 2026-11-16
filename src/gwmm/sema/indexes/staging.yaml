@@ -1,0 +1,4 @@
+staging: true
+staging_words:
+- enum price.stage:000
+- type latest.price:002
