@@ -50,3 +50,19 @@ vhost) and self-skips without it. `scripts/regen_sema_snapshot.sh`
 regenerates the vendored Sema snapshot under `src/gwmm/sema` from a
 sibling `../sema` checkout; never edit the snapshot by hand. `service/`
 has the systemd unit and the shell aliases a box login uses.
+
+## The image
+
+`Dockerfile` builds the maker as a container: the locked environment and
+the `gwmm` entry point, nothing about where it runs. CI builds it for
+amd64 and arm64 on every push and pull request and, on `main`, pushes it
+to `ghcr.io/thegridelectric/marketmaker:<short-sha>` and `:latest`. A run
+mounts the g.node.gt file and sets `GWMM_G_NODE_PATH` to it; the other
+settings are the same `GWMM_*` variables as `template.env`.
+
+```
+podman run --rm --env-file .env \
+    -v ./g.node.gt.json:/mm/g.node.gt.json:ro,z \
+    -e GWMM_G_NODE_PATH=/mm/g.node.gt.json \
+    ghcr.io/thegridelectric/marketmaker:latest
+```
